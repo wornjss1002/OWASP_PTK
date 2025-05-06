@@ -3,7 +3,7 @@
     "name": "OWASP Penetration Testing Kit",
     "short_name": "OWASP PTK",
     "description": "OWASP Penetration Testing Kit",
-    "version": "8.9.2",
+    "version": "8.9.3",
     "manifest_version": 2,
     "background": {
         "page": "ptk/background.html"
@@ -61,5 +61,11 @@
         "ptk/*.map",
         "ptk/*.png",
         "ptk/*.json"
-    ]
+    ],
+    "browser_specific_settings": {
+      "gecko": {
+        "id": "pentestkit@DenisPodgurskii",
+        "strict_min_version": "60.0"
+      }
+    }
 }
