@@ -86,5 +86,11 @@
                 "<all_urls>"
             ]
         }
-    ]
+    ],
+    "browser_specific_settings": {
+      "gecko": {
+        "id": "pentestkit@DenisPodgurskii",
+        "strict_min_version": "102.0"
+      }
+    }
 }
