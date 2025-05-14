@@ -35,7 +35,7 @@
         "swagger-editor": "latest",
         "wappalyzer": "^7.0.3",
         "webextension-polyfill": "latest",
-        "webpack": "^5.97.1"
+        "webpack": "^5.99.8"
     },
     "devDependencies": {
         "@playwright/test": "latest",

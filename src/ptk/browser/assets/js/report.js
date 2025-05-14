@@ -2,6 +2,7 @@
 import { ptk_controller_index } from "../../../controller/index.js"
 import { ptk_controller_sca } from "../../../controller/sca.js"
 import { ptk_controller_rattacker } from "../../../controller/rattacker.js"
+import { ptk_controller_iast } from "../../../controller/iast.js"
 import { ptk_utils, ptk_jwtHelper } from "../../../background/utils.js"
 import { ptk_decoder } from "../../../background/decoder.js"
 import * as rutils from "../js/rutils.js"
@@ -17,6 +18,7 @@ jQuery(function () {
     const index_controller = new ptk_controller_index()
     const sca_controller = new ptk_controller_sca()
     const rattacker_controller = new ptk_controller_rattacker()
+    const iast_controller = new ptk_controller_iast()
 
 
     $('#filter_all').on("click", function () {
@@ -274,14 +276,28 @@ jQuery(function () {
         return ret
     }
 
+    // -- IAST -- //
+
+    function generateIAST(result) {
+        if (!result.scanResult?.items?.length) return
+        $('#iast_report').show()
+
+        let report = ""
+        result.scanResult.items.forEach(item => {
+            $("#iast_report_items").append(rutils.bindIASTAttack(item))
+        })
+        $(".content.stacktrace").show()
+        $('.loader.iast').hide()
+    }
+
 
     // -- R-Attacker -- //
 
     function generateRattacker(result) {
 
-        if(!result.scanResult?.items?.length) return
+        if (!result.scanResult?.items?.length) return
 
-        
+
         $('#rattacker_report').show()
 
         let report = ""
@@ -392,6 +408,13 @@ jQuery(function () {
             bindInfo(result?.scanResult?.host)
             generateRattacker(result)
         })
+    } else if (params.has('iast_report')) {
+        $('#main').hide()
+        $('#iast_report').show()
+        iast_controller.init().then(function (result) {
+            bindInfo(result?.scanResult?.host)
+            generateIAST(result)
+        })
     } else if (params.has('full_report')) {
         index_controller.get().then(() => {
             let host = new URL(index_controller.url).host
@@ -411,6 +434,10 @@ jQuery(function () {
             rattacker_controller.init().then(function (result) {
                 if (host == result?.scanResult?.host)
                     generateRattacker(result)
+            })
+            iast_controller.init().then(function (result) {
+                if (host == result?.scanResult?.host)
+                    generateIAST(result)
             })
         })
     }

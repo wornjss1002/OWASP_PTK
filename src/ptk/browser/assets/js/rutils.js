@@ -153,6 +153,62 @@ export function bindAttack(info, original, index, requestId = -1) {
     return item
 }
 
+function getIASTContext(context) {
+    let res = ''
+    let keys = Object.keys(context)
+    if(keys.includes('element')){
+        res+= '<b>At element:</b> <i> ' + ptk_utils.escapeHtml(context['element'].substring(0, 200)) + "</i>"
+        if(keys.includes('position')){
+             res+= '<b>at position:</b> <i> ' + ptk_utils.escapeHtml(context['position']) + "</i>"
+        }
+    }
+    if(keys.includes('value')){
+        let v = typeof context['value'] == 'string' ? context['value'] : context['value'][0]
+        res+= ' <b>with value:</b> <i>' + ptk_utils.escapeHtml(v) + "</i>"
+    }
+    // Object.keys(context).forEach(item => {
+    //     res += ptk_utils.escapeHtml(item) + ": " + ptk_utils.escapeHtml(context[item])
+    // })
+    return res
+}
+
+export function bindIASTAttack(info, requestId = -1) {
+    let proof = ''
+
+    // let misc = getMisc(info)
+    // let icon = misc.icon, order = misc.order, attackClass = misc.attackClass
+
+    let icon = "", order = "", attackClass = "vuln  visible"
+
+    // if (info.proof)
+    //     proof = `<div class="description"><p>Proof: <b><i name="proof">${ptk_utils.escapeHtml((info.proof))}</i></b></p></div>`
+
+    let target = ptk_utils.escapeHtml(info.location)
+    let context = getIASTContext(info.context)
+    let item = `
+      <div class="card" style="width:100%">
+            <div class="content main">
+                <div class="header">${ptk_utils.escapeHtml(info.type)}</div>
+                <div class="description">
+                    <p><b>Source:</b> <i style="background-color: lightgrey;">${ptk_utils.escapeHtml(info.source)}</i> 
+                     to
+                    <b>Sink:</b> <i style="background-color: lightgrey;">${ptk_utils.escapeHtml(info.sink)}</i></p>
+                    <p>${context}</p>
+                </div>
+            </div>
+            <div class="content stacktrace" style="display:none; overflow:scroll;width: 100%;height: 100%;">
+                <i class="close icon stacktrace" style="position:absolute; right:20px"></i>
+                <pre style="font-size:  smaller">${ptk_utils.escapeHtml(info.trace)}</pre>
+            </div>
+            <div class="ui bottom attached button btn_stacktrace">
+            Stack trace
+            </div>
+      </div>
+    `
+
+    return item
+}
+
 let editor
 export function bindAttackDetails(el, attack, original) {
     let proof = attack.proof
@@ -248,7 +304,7 @@ export function showHtml(obj, newWin = false) {
     return false
 }
 
-export class curl2object{
+export class curl2object {
     static curlType = Object.freeze({
         PARAMS: 'params',
         HEADERS: 'headers',
@@ -256,15 +312,15 @@ export class curl2object{
         URL: 'url',
     })
 
-    constructor() { 
+    constructor() {
         this.backslashRegex = /\\/gi
         this.newLineRegex = /\\n/gi
     }
-    
+
     // let us parse params 
 
-    
-    parser (parse, command) {
+
+    parser(parse, command) {
         command = command.replace(this.backslashRegex, '')
         let object = {};
         let _command = command;

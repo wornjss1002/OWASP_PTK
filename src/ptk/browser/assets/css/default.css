@@ -926,4 +926,7 @@ nav.ui.menu.ui.container>.right.menu>a.item:last-child {
     background: transparent !important;
 }
 
+.dt-empty-footer .dt-search{
+    display: none;
+}
 

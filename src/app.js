@@ -18,6 +18,8 @@ import { ptk_ruleManager } from "./ptk/background/utils.js"
 import { ptk_portscanner } from "./ptk/background/portscanner.js"
 import { ptk_jwt } from "./ptk/background/jwt.js"
 
+import { ptk_iast } from "./ptk/background/iast.js"
+
 
 const worker = self
 worker.isFirefox = browser.runtime.getBrowserInfo ? true : false
@@ -54,10 +56,13 @@ export class ptk_app {
 
             this.jwt = new ptk_jwt()
 
+            this.iast = new ptk_iast()
+
             this.recorder = new ptk_recorder(settings.recorder)
             this.recorder.addMessageListeners()
 
             this.addMessageListeners()
+
         }.bind(this))
     }
 
@@ -93,14 +98,11 @@ export class ptk_app {
 
 
 
-browser.runtime.onInstalled.addListener(function (details) {
-    // if (details.reason == "install") {
-    //     browser.tabs.create({ url: browser.runtime.getURL('ptk/browser/oninstalled.html') })
-    // }
-    // else if (details.reason == "update") {
-    //     browser.tabs.create({ url: browser.runtime.getURL('ptk/browser/onupdated.html') })
-    // }
+browser.runtime.onInstalled.addListener(async () => {
+
 })
+
+
 
 // Start PTK app
 fetch(browser.runtime.getURL('ptk/settings.json'))

@@ -215,7 +215,7 @@ export class ptk_dashboard {
     async msg_init(message) {
         if (worker.ptk_app?.settings?.history?.route != 'index') {
             let link = ""
-            if (['session', 'sca', 'proxy', 'rbuilder', 'rattacker', 'recording', 'decoder', 'swagger-editor', 'portscanner', 'jwt', 'xss','sql'].includes(worker.ptk_app.settings.history.route)) {
+            if (['session', 'sca', 'iast', 'proxy', 'rbuilder', 'rattacker', 'recording', 'decoder', 'swagger-editor', 'portscanner', 'jwt', 'xss','sql'].includes(worker.ptk_app.settings.history.route)) {
                 link = worker.ptk_app.settings.history.route + ".html"
                 if (worker.ptk_app.settings.history.hash) {
                     link += "#" + worker.ptk_app.settings.history.hash

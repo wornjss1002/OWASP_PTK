@@ -34,29 +34,27 @@ jQuery(function () {
     //     .sidebar('toggle')
     //     ;
 
-    setInterval(function () {
-        browser.runtime.sendMessage({
-            channel: "ptk_popup2background_app",
-            type: "ping"
-        })
-    }, 1000);
+
 
     let version = browser.runtime.getManifest().version
     //Main menu
     $('#mainMenuWrapper').prepend(
         `<div class="ui small inverted borderless menu" style="height:12px">
-            <img src="assets/images/hacker_w1.png" id="ptkicon" title="OWASP Penetration Testing Kit">
+            
             <div class="ui container" id="mainMenu">
-                <a class="item" href="index.html" data-history="index">Dashboard</a>
+                <a class="item" href="index.html" data-history="index"><img src="assets/images/hacker_w1.png" id="ptkicon" title="OWASP Penetration Testing Kit">
+                
+                <i class="home icon" style="position: relative;top: -10px;padding: 0px;margin: -5px;"></i></a>
                 <a class="item" href="rattacker.html" data-history="rattacker">DAST</a>
+                <a class="item" href="iast.html" data-history="iast">IAST</a>
                 <a class="item" href="sca.html" data-history="sca">SCA</>
                 <a class="item" href="proxy.html" data-history="proxy">Proxy</a>
                 <a class="item" href="rbuilder.html" data-history="rbuilder">R-Builder</a>
                 <a class="item" href="session.html" data-history="session">Cookies</a>
-                <a class="item" href="jwt.html" data-history="jwt">JWT Inspector</a>
+                <a class="item" href="jwt.html" data-history="jwt">JWT</a>
                 <a class="item" href="decoder.html" data-history="decoder">Decoder</a>
 
-                <div class="ui top left pointing dropdown item" style="margin-right: 0px !important;">Cheat sheets<i class="dropdown icon"></i>
+                <div class="ui top left pointing dropdown item" style="margin-right: 0px !important;">Cheat sheets</i>
                     <div class="menu" style="width: 120px;top: 25px;">
                         <a class="item" href="xss.html" data-history="xss">XSS</a>
                         <a class="item" href="sql.html" data-history="sql">SQL</a>
@@ -72,6 +70,9 @@ jQuery(function () {
 
                     <a class="item" href="portscanner.html" data-history="portscanner">Port Scanner</a>
                     </div>
+                </div>
+                <div style="position: absolute;width: 30px;height: 30px;right: 47px;top: -6px;"> 
+                <a class="item" href="https://athenaos.org/en/resources/browser-pentesting/#_top" target="_blank"><img src="assets/images/athenaos.svg" id="AthenaOS" title="Athena OS Integration"></a>
                 </div>
     
                 
@@ -92,6 +93,7 @@ jQuery(function () {
                     <div><i title="Open in new window" class="external square alternate big icon" id="opennewwindow"></i></div>
                 </div-->
 
+                
                 <div class="ui dropdown item" style="position: absolute;width: 30px;height: 30px;right: 3px;top: 3px;padding: 0px;">
                     <div ><i title="More" class="question circle outline big icon"></i></div>
                     <div class="menu top_right_icon" style="margin-top: 0px !important; min-height: 90px;top: 34px;">
@@ -140,6 +142,8 @@ jQuery(function () {
         </div>
 
         <div class="ui mini message" style="height: 25px;position: fixed; bottom: 0px; right:0px; z-index:1; padding-top: 1px;padding-left: 4px; padding-right: 4px;">            
+            <!--a href="https://athenaos.org/en/resources/browser-pentesting/#_top" target="_blank"><img
+                    src="assets/images/athenaos.png" title="Athena OS integration" style="width: 24px; padding:1px"></a-->
             <a href="https://www.youtube.com/channel/UCbEcTounPkV1aitE1egXfqw/" target="_blank"><i
             class="youtube big icon" title="PTK on youtube" style="margin-top: -18px;"></i></a>
             <a href="https://pentestkit.co.uk" target="_blank"><i class="globe big icon" title="PTK website"
@@ -260,7 +264,7 @@ jQuery(function () {
         $('#ptk_popup_dialog').modal('show')
     })
 
-    //Credits page
+    //Profile page
     $('#profile').on('click', function () {
         $('#ptk_popup_dialog iframe').attr('src', 'profile.html')
         $('#ptk_popup_dialog').modal('show')

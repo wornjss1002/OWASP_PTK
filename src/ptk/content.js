@@ -1,5 +1,29 @@
 /* Author: Denis Podgurskii */
 
+const isFirefox = typeof InstallTrigger !== 'undefined';
+const isChrome = !!window.chrome && !!window.chrome.runtime;
+console.log({ isChrome, isFirefox });
+
+// keep service worker alive
+setInterval(function () {
+    browser.runtime.sendMessage({
+        channel: "ptk_popup2background_app",
+        type: "ping"
+    }).catch(e => e)
+}, 20000);
+
+
+
+// browser.runtime.sendMessage({
+//     channel: "ptk_content2iast",
+//     type: 'check'
+// }).then(function (result) {
+
+// }).catch(e => console.log(e))
+
+
+
+
 browser.runtime.onMessage.addListener(function (message, sender, sendResponse) {
     if (message.channel == "ptk_background2content" && message.type == "init") {
         const contentData = message
@@ -32,7 +56,7 @@ browser.runtime.onMessage.addListener(function (message, sender, sendResponse) {
         return Promise.resolve()
     }
     if (message.channel == "ptk_popup2content") {
-        if (message.type == "get_storage"){
+        if (message.type == "get_storage") {
             browser.runtime.sendMessage({
                 channel: "ptk_content2popup",
                 type: "return_storage",
@@ -40,7 +64,7 @@ browser.runtime.onMessage.addListener(function (message, sender, sendResponse) {
             }).catch(e => e)
             return Promise.resolve()
         }
-           
+
         else if (message.type == "update_storage") {
             if (message.storage == 'localStorage') {
                 let item = window.localStorage.getItem(message.name)
@@ -65,6 +89,16 @@ browser.runtime.onMessage.addListener(function (message, sender, sendResponse) {
 })
 
 window.addEventListener("message", (event) => {
+
+    if (event.data?.ptk_iast) {
+        browser.runtime.sendMessage({
+            channel: "ptk_content_iast2background_iast",
+            type: "finding_report",
+            finding: event.data.finding
+        }).catch(e => e)
+    }
+
+
     if (event.data?.ptk) {
         browser.runtime.sendMessage({
             channel: "ptk_content2rattacker",
@@ -258,3 +292,9 @@ async function runAnalysis(message, js, dom) {
 
     return Promise.resolve(true)
 }
+
+
+
+
+
+

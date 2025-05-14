@@ -9,7 +9,7 @@
     <meta content="Penetration Testing Kit, request builder, traffic recording, macro recording" name="keywords" />
     <meta content="PPType" name="author" />
     <meta content="#ffffff" name="theme-color" />
-    <title>OWASP Penetration Testing Kit - DAST (R-Attacker)</title>
+    <title>OWASP Penetration Testing Kit - IAST (Interactive Application Security Testing)</title>
 
     <script src="../packages/browser-polyfill/browser-polyfill.min.js"></script>
     <script src="../packages/jquery/jquery.min.js"></script>
@@ -33,7 +33,7 @@
     <link rel="stylesheet" href="assets/css/default.css" type="text/css" />
     <script src="assets/js/menu.js"></script>
 
-    <script type="module" src="assets/js/rattacker.js"></script>
+    <script type="module" src="assets/js/iast.js"></script>
 
     <style>
         .CodeMirror-code {
@@ -88,106 +88,52 @@
     </div>
     <div id="pagecontent" style="padding-top:80px;">
         <div id="main">
-            <table class="ui tiny table" style="padding: 0px;margin: 0px;border: none;">
-                <tbody>
-                    <tr>
-                        <td style="min-width:50px; vertical-align: text-top; padding: 0px;">
-                            <div class="eight wide field" style="padding-right: 1px;">
-                                <div class="field rattacker"
-                                    style="scrollbar-width: none;height: 100% !important;min-height: 85vh; position: relative;">
-                                    <div class="field"
-                                        style="border:none;scrollbar-width: none;position: absolute;height: 100%;width: 100%;">
-                                        <div class="ui items styled accordion" id="request_info"
-                                            style="width: 100%; overflow: scroll;position:absolute; margin: 0px;scrollbar-width: none;">
-                                        </div>
-                                        <div style="position:absolute; top:0px;right: 0px">
-                                            <div class="ui centered inline active inverted loader" id="init_loader">
-                                            </div>
-                                        </div>
 
+            <div class="eight wide field" style="padding-left: 1px;">
+                <div class="field rattacker" style="scrollbar-width: none;height: 100% !important;min-height: 85vh;">
+                    <div class="ui tiny message"
+                        style="position: sticky;top: 0px;z-index: 1; min-height: 80px;padding-top:15px">
 
-                                        <div style="height: 60px; width: 100%; position: absolute; bottom:0px; overflow: scroll;display:none;scrollbar-width: none;"
-                                            id="progress_message">
-                                            <div class="ui small message" style="height:100%">
-                                                <div class="header">
-                                                    Scan progress
-                                                </div>
-                                                <p>Attack running: <span id="progress_attack_name"> </span></p>
-                                            </div>
-
-                                        </div>
-
-                                    </div>
-                                </div>
+                        <div class="ui mini statistic left floated" style="margin-top: 5px;">
+                            <div class="value" id="vulns_count">
+                                0
                             </div>
-                        </td>
-                        <td style="width:50%;margin: 0px; padding: 0px 0px 0px 2px;border: none;vertical-align: top;">
-                            <div class="eight wide field" style="padding-left: 1px;">
-                                <div class="field rattacker"
-                                    style="scrollbar-width: none;height: 100% !important;min-height: 85vh;">
-                                    <div class="ui tiny message"
-                                        style="position: sticky;top: 0px;z-index: 1; min-height: 80px;padding-top:15px">
-                                        <div class="ui small icon buttons"
-                                            style="position: absolute;top: 0px;left: 0px;">
-                                            <div class="ui active button" id="filter_all"><i class="icon"
-                                                    title="All attacks" style="min-width: 70px;">All attacks</i></div>
-                                            <div class="ui button" id="filter_vuln"><i class="icon"
-                                                    title="Vulnerabilities only"
-                                                    style="min-width: 70px;">Vulnerabilities</i>
-                                            </div>
-                                        </div>
-                                        <br />
-                                        <div class="ui mini statistic left floated" style="margin-top: 5px;">
-                                            <div class="value" id="attacks_count">
-                                                0
-                                            </div>
-                                            <div class="label">
-                                                Attacks
-                                            </div>
-                                        </div>
-                                        <div class="ui mini statistic left floated" style="margin-top: 5px;">
-                                            <div class="value" id="vulns_count">
-                                                0
-                                            </div>
-                                            <div class="label">
-                                                Findings
-                                            </div>
-                                        </div>
-                                        <div class="ui mini statistic right floated" style="margin-top: 5px;">
-                                            <div class="value" id="low_count">
-                                                0
-                                            </div>
-                                            <div class="label"><i class="exclamation triangle yellow icon"></i>
-                                                Low
-                                            </div>
-                                        </div>
-                                        <div class="ui mini statistic right floated" style="margin-top: 5px;">
-                                            <div class="value" id="medium_count">
-                                                0
-                                            </div>
-                                            <div class="label"><i class="exclamation triangle orange icon"></i>
-                                                Medium
-                                            </div>
-                                        </div>
-                                        <div class="ui mini statistic right floated" style="margin-top: 5px;">
-                                            <div class="value" id="high_count">
-                                                0
-                                            </div>
-                                            <div class="label"><i class="exclamation triangle red icon"></i>
-                                                High
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="ui items" id="attacks_info"
-                                        style="width: 100%; overflow: scroll;position:absolute; margin: 0px;scrollbar-width: none;">
-                                    </div>
-
-                                </div>
+                            <div class="label">
+                                Findings
                             </div>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+                        </div>
+                        <div class="ui mini statistic right floated" style="margin-top: 5px;">
+                            <div class="value" id="low_count">
+                                0
+                            </div>
+                            <div class="label"><i class="exclamation triangle yellow icon"></i>
+                                Low
+                            </div>
+                        </div>
+                        <div class="ui mini statistic right floated" style="margin-top: 5px;">
+                            <div class="value" id="medium_count">
+                                0
+                            </div>
+                            <div class="label"><i class="exclamation triangle orange icon"></i>
+                                Medium
+                            </div>
+                        </div>
+                        <div class="ui mini statistic right floated" style="margin-top: 5px;">
+                            <div class="value" id="high_count">
+                                0
+                            </div>
+                            <div class="label"><i class="exclamation triangle red icon"></i>
+                                High
+                            </div>
+                        </div>
+                    </div>
+                    <div class="ui cards" id="attacks_info"
+                        style="width: 100%; overflow: scroll;position:absolute; margin: 0px;scrollbar-width: none;">
+                    </div>
+
+                </div>
+            </div>
+
 
             <div style="height: 100%;display:none" id="welcome_message">
                 <div class="ui large message" style="height:100%;width: 100%;position: absolute; top: 80px;z-index: 1;">
@@ -200,8 +146,13 @@
                                 target="_blank">https://app.ptk-plus.io/</a>
                         </div>
                     </div> -->
+
+
                     <div class="content" style="padding-bottom: 10px;">
-                    DAST stands for Dynamic Application Security Testing. It's a method of security testing where a running application is actively tested and probed using real traffic and requests.
+                        IAST or Interactive Application Security Testing is a
+                        security testing method that analyzes an application
+                        while it's running, using real-time monitoring and
+                        instrumentation to identify vulnerabilities.
                     </div>
                     <div class="header">How to scan an application:</div>
                     <div class="content" style="margin-top: -15px;">
@@ -211,12 +162,12 @@
                             <li>Start browsing the application you are scanning, eg click on
                                 different
                                 links, submit forms, etc</li>
-                            <li>Once completed open DAST scanner (R-Attacker) and stop the scan</li>
+                            <li>Once completed open IAST scanner and stop the scan</li>
                             <li>Check the result</li>
                         </ul>
                     </div>
 
-                    <div class="header">Default attacks </div>
+                    <div class="header">Default sinks </div>
                     <div class="content" style="margin-top: 8px;">
                         <table id="tbl_modules" class="ui celled table small responsive nowrap unstackable"
                             width="100%">
@@ -235,6 +186,7 @@
             </div>
 
         </div>
+
     </div>
 
     <!-- Attack details and showHtml support -->
@@ -302,16 +254,50 @@
 
         <div class="content">
             <div class="ui message" style="margin: -20px -20px 0px -20px;">
-                <p>You are about running attacks on <span id="scan_host" style="font-weight: 600;"></span></p>
+                <p>You are about running IAST scan on <span id="scan_host" style="font-weight: 600;"></span></p>
             </div>
-            <p>Domains to scan (comma separated): <br />
+            <table>
+                <tr>
+                    <th>
+                        Sources:
+                    </th>
+                    <th>
+                        Sinks:
+                    </th>
+                </tr>
+                <tr>
+                    <td>
+                        <ul>
+                            <li>cookie</li>
+                            <li>input.value</li>
+                            <li>localStorage, sessionStorage</li>
+                            <li>location</li>
+                            <li>hash</li>
+                            <li>query params</li>
+                            <li>window.name</li>
+                        </ul>
+                    </td>
+                    <td>
+                        <ul>
+                            <li>document.write</li>
+                            <li>innerHTML, outerHTML</li>
+                            <li>insertAdjacentHTML</li>
+                            <li>eval</li>
+                            <li>Function</li>
+                            <li>appendChild</li>
+                            <li>redirect</li>
+                        </ul>
+                    </td>
+                </tr>
+            </table>
+            <!-- <p>Domains to scan (comma separated): <br />
                 <i>Example: <br /> domain.com, api.domain.com, subdomain.domain.com, www.domain.com</i>
                 <br />
                 <b>OR</b>
                 <br />
                 <i>*.domain.com - to scan all subdomains</i>
-            </p>
-            <textarea id="scan_domains" style="width: 100%; min-height: 100px;"></textarea>
+            </p> -->
+            <!-- <textarea id="scan_domains" style="width: 100%; min-height: 100px;"></textarea> -->
         </div>
         <div class="actions">
             <div class="ui cancel button">Cancel</div>
@@ -338,8 +324,10 @@
             <div class="ui  button secondary import_scan_text_btn">Import from text</div>
             <div class="ui right floated button secondary import_scan_file_btn">Import from file</div>
             <input id="import_scan_file_input" type="file" hidden />
+            <div class="ui message error" id="scan_import_error_msg" style="display: none;"></div>
         </div>
     </div>
+
 
 </body>
 

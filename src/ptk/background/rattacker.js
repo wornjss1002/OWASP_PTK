@@ -3,6 +3,8 @@ import { ptk_module } from "../modules/module.js"
 import { ptk_request } from "./rbuilder.js"
 import { ptk_utils, ptk_logger, ptk_queue, ptk_storage, ptk_ruleManager } from "../background/utils.js"
 
+//import  { ptk_iast } from "./iast.js"
+
 const worker = self
 
 export class ptk_rattacker {
@@ -75,6 +77,7 @@ export class ptk_rattacker {
 
     getScanResultSchema() {
         return {
+            type: "dast",
             scanId: null,
             date: new Date().toISOString(),
             tabId: null,
@@ -352,15 +355,20 @@ export class ptk_rattacker {
     }
 
     async msg_save(message) {
-        this.reset()
-        ptk_storage.setItem(this.storageKey, JSON.parse(message.json))
-        await this.init()
-        return Promise.resolve({
-            scanResult: JSON.parse(JSON.stringify(this.scanResult)),
-            isScanRunning: this.isScanRunning,
-            default_modules: JSON.parse(JSON.stringify(this.modules)),
-            activeTab: worker.ptk_app.proxy.activeTab
-        })
+        let res = JSON.parse(message.json)
+        if ((!res.type || res.type == 'dast')  && Object.keys(res?.items).length > 0) {
+            this.reset()
+            ptk_storage.setItem(this.storageKey, JSON.parse(message.json))
+            await this.init()
+            return Promise.resolve({
+                scanResult: JSON.parse(JSON.stringify(this.scanResult)),
+                isScanRunning: this.isScanRunning,
+                default_modules: JSON.parse(JSON.stringify(this.modules)),
+                activeTab: worker.ptk_app.proxy.activeTab
+            })
+        } else {
+            return Promise.reject(new Error("Wrong format or empty scan result"))
+        }
     }
 
     msg_run_bg_scan(message) {

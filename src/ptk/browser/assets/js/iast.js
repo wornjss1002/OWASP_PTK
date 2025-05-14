@@ -1,11 +1,11 @@
 /* Author: Denis Podgurskii */
-import { ptk_controller_rattacker } from "../../../controller/rattacker.js"
+import { ptk_controller_iast } from "../../../controller/iast.js"
 import { ptk_controller_rbuilder } from "../../../controller/rbuilder.js"
 import { ptk_utils } from "../../../background/utils.js"
 import { ptk_decoder } from "../../../background/decoder.js"
 import * as rutils from "../js/rutils.js"
 
-const controller = new ptk_controller_rattacker()
+const controller = new ptk_controller_iast()
 const request_controller = new ptk_controller_rbuilder()
 const decoder = new ptk_decoder()
 
@@ -29,7 +29,7 @@ jQuery(function () {
     $(document).on("click", ".generate_report", function () {
         browser.windows.create({
             type: 'popup',
-            url: browser.runtime.getURL("/ptk/browser/report.html?rattacker_report")
+            url: browser.runtime.getURL("/ptk/browser/report.html?iast_report")
         })
     })
 
@@ -62,16 +62,16 @@ jQuery(function () {
 
             let h = new URL(result.activeTab.url).host
             $('#scan_host').text(h)
-            $('#scan_domains').text(h)
+            // $('#scan_domains').text(h)
 
             $('#run_scan_dlg')
                 .modal({
                     allowMultiple: true,
                     onApprove: function () {
-                        controller.runBackroungScan(result.activeTab.tabId, h, $('#scan_domains').val()).then(function (result) {
+                        controller.runBackroungScan(result.activeTab.tabId, h).then(function (result) {
                             $("#request_info").html("")
                             $("#attacks_info").html("")
-                            $(document).trigger("bind_stats", result.scanResult)
+                            //$(document).trigger("bind_stats", result.scanResult)
                             changeView(result)
                         })
                     }
@@ -185,7 +185,7 @@ jQuery(function () {
         controller.init().then(function (result) {
             if (Object.keys(result.scanResult?.items).length > 0) {
                 let blob = new Blob([JSON.stringify(result.scanResult)], { type: 'text/plain' })
-                let fName = "PTK_DAST_scan.json"
+                let fName = "PTK_IAST_scan.json"
 
                 let downloadLink = document.createElement("a")
                 downloadLink.download = fName
@@ -220,7 +220,7 @@ jQuery(function () {
                 }
                 $('#import_export_dlg').modal('hide')
             }).catch(e => {
-                $('#result_message').text('Could not import DAST scan')
+                $('#result_message').text('Could not import IAST scan')
                 $('#result_dialog').modal('show')
             })
         }
@@ -243,7 +243,7 @@ jQuery(function () {
             }
             $('#import_export_dlg').modal('hide')
         }).catch(e => {
-            $('#result_message').text('Could not import DAST scan: ')
+            $('#result_message').text('Could not import IAST scan')
             $('#result_dialog').modal('show')
         })
     })
@@ -289,7 +289,7 @@ jQuery(function () {
         showWelcomeForm()
         controller.reset().then(function (result) {
             $(document).trigger("bind_stats", result.scanResult)
-            bindModules(result)
+            //bindModules(result)
         })
     })
 
@@ -313,18 +313,26 @@ jQuery(function () {
     })
 
 
-    $(document).on("click", ".attack_details", function () {
-        $('.metadata .item').tab()
-        let requestId = $(this).attr("data-requestId")
-        let index = $(this).attr("data-index")
-        let attack = controller.scanResult.scanResult.items[requestId].attacks[index]
-        rutils.bindAttackDetails($(this), attack, controller.scanResult.scanResult.items[requestId].original)
-        $('.metadata .item').tab('change tab', 'first');
+    $(document).on("click", ".btn_stacktrace", function () {
+        let el = $(this).parent().find(".content.stacktrace")
+        if (this.textContent.trim() == 'Stack trace') {
+            this.textContent = 'Hide stack trace'
+            $(el).show()
+        } else {
+            $(this).parent().find(".content.stacktrace").hide()
+            this.textContent = 'Stack trace'
+        }
+
+    })
+
+    $(document).on("click", ".close.icon.stacktrace", function () {
+        $(this).parent().hide()
+        $(this).parent().parent().find(".btn_stacktrace").text('Stack trace')
     })
 
 
     $(document).on("bind_stats", function (e, scanResult) {
-        if (scanResult.stats) {
+        if (scanResult?.stats) {
             bindStats(scanResult.stats)
             if (scanResult.stats.vulnsCount > 0) {
                 $('#filter_vuln').trigger("click")
@@ -355,7 +363,7 @@ jQuery(function () {
         if (Object.keys(result.scanResult?.items).length > 0) {
             bindScanResult(result)
         } else {
-            bindModules(result)
+            //bindModules(result)
         }
     })
     $('.ui.accordion').accordion({
@@ -463,18 +471,14 @@ function bindScanResult(result) {
         $('.generate_report').show()
         $('.save_report').show()
         //$('.exchange').show()
-        $('#request_info').html("")
+        //$('#request_info').html("")
         $('#attacks_info').html("")
         hideWelcomeForm()
 
         for (let i in result.scanResult.items) {
             let item = result.scanResult.items[i]
             item.requestId = i
-            $("#request_info").append(bindRequest(item.original, i))
-
-            for (let y in item.attacks) {
-                $("#attacks_info").append(rutils.bindAttack(item.attacks[y], item.original, y, i))
-            }
+            $("#attacks_info").append(rutils.bindIASTAttack(item, i))
         }
 
         rutils.sortAttacks()
@@ -495,17 +499,42 @@ function bindRequest(info, requestId) {
     let item = `
                 <div>
                 <div class="title short_message_text"  style="overflow-y: hidden;height: 34px;background-color: #eeeeee;margin:1px 0 0 0;cursor:pointer; position: relative">
-                    <i class="dropdown icon"></i>${info.request.url}<i class="filter icon" style="float:right; position: absolute; top: 3px; right: -3px;" title="Filter by request"></i>
+                    <i class="dropdown icon"></i> ${ptk_utils.escapeHtml(info.location)}<i class="filter icon" style="float:right; position: absolute; top: 3px; right: -3px;" title="Filter by request"></i>
                     
                 </div>
                
-                <div class="content">
-                <input type="hidden" name="requestId" value="${requestId}" />
-                <textarea class="ui medium input" style="width:100%; height:200px; border: solid 1px #cecece; padding: 12px;">${info.request.raw}</textarea></div>
-                </div>
+
                 `
     return item
 }
+
+// function bindAttack(finding, requestId = -1) {
+//     let proof = ''
+
+//     let misc = getMisc(info)
+//     let icon = misc.icon, order = misc.order, attackClass = misc.attackClass
+
+//     if (info.proof)
+//         proof = `<div class="description"><p>Proof: <b><i name="proof">${ptk_utils.escapeHtml((info.proof))}</i></b></p></div>`
+
+//     let target = finding.location
+//     let item = `
+//                 <div class="ui message attack_info ${attackClass} ${requestId}" style="position:relative;margin-top: 0;" data-order="${order}">
+//                 ${icon}
+//                 <div class="description">
+//                     <p>Attack: ${ptk_utils.escapeHtml(info.metadata.name)}</p>
+//                 </div>
+//                 <div class="description">
+//                     <p>URL: <a href="${target}" target="_blank">${target}</a></p>
+//                 </div>
+//                 ${proof}
+//                 <div class="ui left floated">
+//                     <a href="#" class="attack_details" data-requestId="${requestId}" data-index="${index}">Details</a>
+//                 </div>
+//                 </div>`
+
+//     return item
+// }
 
 function bindAttackProgress(message) {
     $("#progress_attack_name").text(message.info.name)
@@ -519,19 +548,5 @@ function bindAttackProgress(message) {
 /* Chrome runtime events handlers */
 ////////////////////////////////////
 browser.runtime.onMessage.addListener(function (message, sender, sendResponse) {
-    if (message.channel == "ptk_background2popup_rattacker") {
-        if (message.type == "attack completed") {
-            //$(document).trigger("bind_stats", message.scanResult)
-            //$("#attacks_info").append(bindAttack(message.info))
-            //bindScanResult(message)
-            bindAttackProgress(message)
-        }
-        if (message.type == "all attacks completed") {
-            bindScanResult(message)
-        }
-        if (message.type == "attack failed") {
-            $('#scan_error_message').text(message.info)
-            $('.mini.modal').modal('show')
-        }
-    }
+
 })
