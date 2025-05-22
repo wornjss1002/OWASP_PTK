@@ -56,10 +56,9 @@
     <div id="mainMenuWrapper">
         <div class="ui segment clearing info_tab">
             <div id="dashboard_message_text" class="ui left floated header short_message_text"
-                style="width: calc(100vw - 300px);"></div>
+                style="width: calc(100vw - 325px);"></div>
             <div class="ui right floated header buttons">
-                <button id="run_scan" class="ui black button right floated run_scan">Run scans</button>
-                <button id="stop_scan" class="ui black button right floated stop_scan" style="display: none;">Stop scans</button>
+                <button id="manage_scans" class="ui black button right floated disabled">Manage scans</button>
             </div>
             <div class="ui right floated header buttons">
                 <button id="generate_report" class="ui black button right floated disabled">Generate report</button>
@@ -268,47 +267,58 @@
         <form class="ui small form" id="scans_form" style="margin-top: 15px;">
             <div class="ui  three column width grid">
                 <div class="row" style="border-bottom: solid 1px #cecece;" id="dast_scan_row">
-                    <div class="two wide column"><b>DAST</b></div>
-                    <div class="two wide column">
-                        <div class="ui toggle checkbox">
+                    <div class="two wide column dast_scan_control">
+                        <div class="ui header">DAST</div>
+                    </div>
+                    <div class="two wide column dast_scan_control">
+                        <div class="ui toggle checkbox dast_scan">
                             <input type="checkbox" name="dast_scan" checked="checked">
                         </div>
                     </div>
-                    <div class="ten wide column">
+                    <div class="ten wide column dast_scan_control">
                         Domains to scan (comma separated):
                         <textarea id="scan_domains" style="width: 100%; height: 30px;"></textarea>
                     </div>
-
+                    <div class="two wide column"> <div class="ui mini button secondary dast_scan_stop" style="margin-top: 45px;">Stop</div></div>
                 </div>
                 <div class="row" style="border-bottom: solid 1px #cecece;" id="iast_scan_row">
-                    <div class="two wide column">IAST</div>
-                    <div class="two wide column">
-                        <div class="ui toggle checkbox">
+                    <div class="two wide column iast_scan_control">
+                        <div class="ui header">IAST</div>
+                    </div>
+                    <div class="two wide column iast_scan_control">
+                        <div class="ui toggle checkbox iast_scan">
                             <input type="checkbox" name="iast_scan" checked="checked">
                         </div>
                     </div>
-                    <div class="ten wide column">
+                    <div class="ten wide column iast_scan_control">
                     </div>
+                    <div class="two wide column"> <div class="ui mini button secondary iast_scan_stop" style="margin: -2px;">Stop</div></div>
                 </div>
                 <div class="row" style="border-bottom: solid 1px #cecece;" id="sast_scan_row">
-                    <div class="two wide column">SAST</div>
-                    <div class="two wide column">
-                        <div class="ui toggle checkbox">
+                    <div class="two wide column iast_scan_control">
+                        <div class="ui header">SAST</div>
+                    </div>
+                    <div class="two wide column iast_scan_control">
+                        <div class="ui toggle checkbox sast_scan">
                             <input type="checkbox" name="sast_scan" checked="checked">
                         </div>
                     </div>
-                    <div class="ten wide column">
+                    <div class="ten wide column iast_scan_control">
                     </div>
+                    <div class="two wide column"> <div class="ui mini button secondary sast_scan_stop" style="margin: -2px;">Stop</div></div>
                 </div>
-                <div class="row" id="sca_scan_row">
-                    <div class="two wide column">SCA</div>
-                    <div class="two wide column">
-                        <div class="ui toggle checkbox">
+                <div class="row" id="sca_scan_row" >
+                    <div class="two wide column sca_scan_control">
+                        <div class="ui header">SCA</div>
+                    </div>
+                    <div class="two wide column sca_scan_control">
+                        <div class="ui toggle checkbox sca_scan">
                             <input type="checkbox" name="sca_scan" checked="checked">
                         </div>
                     </div>
-                    <div class="ten wide column">
+                    <div class="ten wide column sca_scan_control">
                     </div>
+                    <div class="two wide column"> <div class="ui mini button secondary sca_scan_stop" style="margin: -2px;">Stop</div></div>
                 </div>
             </div>
         </form>

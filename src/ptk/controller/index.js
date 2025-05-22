@@ -43,10 +43,11 @@ export class ptk_controller_index {
         }).catch(e => e)
     }
 
-    async stopBackroungScan(){
+    async stopBackroungScan(scans){
         return browser.runtime.sendMessage({
             channel: "ptk_popup2background_dashboard",
-            type: "stop_bg_scan"
+            type: "stop_bg_scan",
+            scans: scans
         }).then(response => {
             return response
         }).catch(e => e)

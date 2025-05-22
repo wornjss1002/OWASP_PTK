@@ -4,9 +4,19 @@
     "short_name": "OWASP PTK",
     "description": "OWASP Penetration Testing Kit",
     "version": "9.1.0",
-    "manifest_version": 2,
+    "manifest_version": 3,
+    "incognito": "split",
     "background": {
-        "page": "ptk/background.html"
+        "service_worker": "app.js",
+        "type": "module"
+    },
+    "content_security_policy": {
+        "sandbox": "sandbox allow-scripts allow-forms allow-popups allow-modals;"
+    },
+    "sandbox": {
+        "pages": [
+            "ptk/browser/showhtml.html"
+        ]
     },
     "content_scripts": [
         {
@@ -17,7 +27,8 @@
                 "ptk/packages/browser-polyfill/browser-polyfill.min.js"
             ],
             "all_frames": true,
-            "run_at": "document_start"
+            "run_at": "document_start",
+            "match_about_blank": true
         },
         {
             "matches": [
@@ -26,12 +37,12 @@
             "js": [
                 "ptk/content.js"
             ],
-            "all_frames": false,
-            "run_at": "document_start"
+            "all_frames": true,
+            "run_at": "document_start",
+            "match_about_blank": true
         }
     ],
     "permissions": [
-        "<all_urls>",
         "activeTab",
         "cookies",
         "notifications",
@@ -39,13 +50,20 @@
         "unlimitedStorage",
         "tabs",
         "webRequest",
-        "webRequestBlocking",
-        "scripting"
+        "background",
+        "debugger",
+        "scripting",
+        "declarativeNetRequest",
+        "declarativeNetRequestWithHostAccess"
+    ],
+    "host_permissions": [
+        "<all_urls>",
+        "*://*/*"
     ],
     "icons": {
         "128": "ptk/browser/assets/images/icon.png"
     },
-    "browser_action": {
+    "action": {
         "default_icon": {
             "128": "ptk/browser/assets/images/icon.png"
         },
@@ -57,15 +75,22 @@
         "open_in_tab": false
     },
     "web_accessible_resources": [
-        "ptk/*.js",
-        "ptk/*.map",
-        "ptk/*.png",
-        "ptk/*.json"
+        {
+            "resources": [
+                "ptk/*.js",
+                "ptk/*.map",
+                "ptk/*.png",
+                "ptk/*.json"
+            ],
+            "matches": [
+                "<all_urls>"
+            ]
+        }
     ],
     "browser_specific_settings": {
         "gecko": {
             "id": "pentestkit@DenisPodgurskii",
-            "strict_min_version": "60.0"
+            "strict_min_version": "102.0"
         }
     }
 }

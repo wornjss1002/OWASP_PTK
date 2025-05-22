@@ -190,7 +190,7 @@ export class ptk_dashboard {
             return Promise.reject({ success: false, error: 'Error origin value' })
 
         if (message.channel == "ptk_popup2background_dashboard") {
-            console.log(message)
+            //console.log(message)
             if (this["msg_" + message.type]) {
                 return this["msg_" + message.type](message)
             }
@@ -203,15 +203,31 @@ export class ptk_dashboard {
         if (message.scans.iast) worker.ptk_app.iast.runBackroungScan(message.tabId, message.host)
         if (message.scans.sast) worker.ptk_app.sast.runBackroungScan(message.tabId, message.host)
         if (message.scans.sca) worker.ptk_app.sca.runBackroungScan(message.tabId, message.host)
-        return Promise.resolve({ success: true })
+
+        let scans = {
+            dast: worker.ptk_app.rattacker.isScanRunning,
+            iast: worker.ptk_app.iast.isScanRunning,
+            sast: worker.ptk_app.sast.isScanRunning,
+            sca: worker.ptk_app.sca.isScanRunning
+        }
+
+        return Promise.resolve(Object.assign({}, self, worker.ptk_app.proxy.activeTab, { scans: scans }))
     }
 
     async msg_stop_bg_scan(message) {
-        if (worker.ptk_app.rattacker.isScanRunning) worker.ptk_app.rattacker.stopBackroungScan()
-        if (worker.ptk_app.iast.isScanRunning) worker.ptk_app.iast.stopBackroungScan()
-        if (worker.ptk_app.sast.isScanRunning) worker.ptk_app.sast.stopBackroungScan()
-        if (worker.ptk_app.sca.isScanRunning) worker.ptk_app.sca.stopBackroungScan()
-        return Promise.resolve({ success: true })
+        if (message.scans.dast) worker.ptk_app.rattacker.stopBackroungScan()
+        if (message.scans.iast) worker.ptk_app.iast.stopBackroungScan()
+        if (message.scans.sast) worker.ptk_app.sast.stopBackroungScan()
+        if (message.scans.sca) worker.ptk_app.sca.stopBackroungScan()
+
+        let scans = {
+            dast: worker.ptk_app.rattacker.isScanRunning,
+            iast: worker.ptk_app.iast.isScanRunning,
+            sast: worker.ptk_app.sast.isScanRunning,
+            sca: worker.ptk_app.sca.isScanRunning
+        }
+
+        return Promise.resolve(Object.assign({}, self, worker.ptk_app.proxy.activeTab, { scans: scans }))
     }
 
     async msg_get(message) {
