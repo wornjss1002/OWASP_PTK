@@ -81,6 +81,10 @@ jQuery(function () {
             //console.log (result)
             bindInfo()
             bindOWASP()
+            if(result?.scans?.dast || result?.scans?.iast || result?.scans?.sast || result?.scans?.sca){
+                $('#run_scan').hide()
+                $('#stop_scan').show()
+            }
         })
     }, 150)
 
@@ -278,6 +282,58 @@ $(document).on("bind_sessionStorage", function (e, item) {
 function merge(array1, array2) {
     return [...new Set([...array1, ...array2])]
 }
+
+
+
+
+$(document).on("click", ".stop_scan", function () {
+    controller.stopBackroungScan().then(function (result) {
+        $('#run_scan').show()
+        $('#stop_scan').hide()
+    })
+})
+
+$(document).on("click", ".run_scan", function () {
+    controller.init().then(function (result) {
+        if (!result?.activeTab?.url) {
+            $('#result_header').text("Error")
+            $('#result_message').text("Active tab not set. Reload required tab to activate tracking.")
+            $('#result_dialog').modal('show')
+            return false
+        }
+
+        let h = new URL(result.activeTab.url).host
+        $('#scan_host').text(h)
+        $('#scan_domains').text(h)
+
+        result.scans.dast ? $('#dast_scan_row').addClass('disable') : $('#dast_scan_row').removeClass('disable')
+        result.scans.iast ? $('#iast_scan_row').addClass('disable') : $('#iast_scan_row').removeClass('disable')
+        result.scans.sast ? $('#sast_scan_row').addClass('disable') : $('#sast_scan_row').removeClass('disable')
+        result.scans.sca ? $('#sca_scan_row').addClass('disable') : $('#sca_scan_row').removeClass('disable')
+
+        $('#run_scan_dlg')
+            .modal({
+                allowMultiple: true,
+                onApprove: function () {
+                    let $form = $('#scans_form'), values = $form.form('get values')
+                    let s = {
+                        dast: values['dast_scan'] == 'on' ? true :  false,
+                        iast: values['iast_scan'] == 'on' ? true :  false,
+                        sast: values['sast_scan'] == 'on' ? true :  false,
+                        sca: values['sca_scan'] == 'on' ? true :  false,
+                    }
+                    controller.runBackroungScan(result.activeTab.tabId, h, $('#scan_domains').val(), s).then(function (result) {
+                        //changeView(result)
+                    })
+                }
+            })
+            .modal('show')
+    })
+
+    return false
+})
+
+
 
 /* Chrome runtime events handlers */
 browser.runtime.onMessage.addListener(function (message, sender, sendResponse) {

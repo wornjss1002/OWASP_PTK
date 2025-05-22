@@ -9,7 +9,7 @@
     <meta content="Penetration Testing Kit, request builder, traffic recording, macro recording" name="keywords" />
     <meta content="PPType" name="author" />
     <meta content="#ffffff" name="theme-color" />
-    <title>OWASP Penetration Testing Kit - IAST (Interactive Application Security Testing)</title>
+    <title>OWASP Penetration Testing Kit - SAST (Static Application Security Testing)</title>
 
     <script src="../packages/browser-polyfill/browser-polyfill.min.js"></script>
     <script src="../packages/jquery/jquery.min.js"></script>
@@ -33,7 +33,7 @@
     <link rel="stylesheet" href="assets/css/default.css" type="text/css" />
     <script src="assets/js/menu.js"></script>
 
-    <script type="module" src="assets/js/iast.js"></script>
+    <script type="module" src="assets/js/sast.js"></script>
 
     <style>
         .CodeMirror-code {
@@ -101,6 +101,7 @@
                             <div class="value" id="vulns_count">
                                 0
                             </div>
+
                         </div>
                         <div class="ui mini statistic right floated" style="margin-top: 5px;">
                             <div class="label"><i class="exclamation triangle yellow icon"></i>
@@ -149,10 +150,11 @@
 
 
                     <div class="content" style="padding-bottom: 10px;">
-                        IAST, or Interactive Application Security Testing, is a
-                        security testing method that analyzes an application
-                        while it's running, using real-time monitoring and
-                        instrumentation to identify vulnerabilities.
+                        SAST, or Static Application Security Testing, is a white-box testing method that analyzes source
+                        code, bytecode, or binary code for vulnerabilities without executing the application.
+                        By scanning JS source files (including ES modules, frameworks like React/Vue, and embedded
+                        scripts in HTML), OWASP PTK will identify injection flaws, insecure data
+                        handling and DOM-based XSS before code ever reaches QA or production.
                     </div>
                     <div class="header">How to scan an application:</div>
                     <div class="content" style="margin-top: -15px;">
@@ -162,7 +164,7 @@
                             <li>Start browsing the application you are scanning, eg click on
                                 different
                                 links, submit forms, etc</li>
-                            <li>Once completed open IAST scanner and stop the scan</li>
+                            <li>Once completed open SAST scanner and stop the scan</li>
                             <li>Check the result</li>
                         </ul>
                     </div>
@@ -172,23 +174,11 @@
                         <table class="ui celled table">
                             <thead>
                                 <tr>
-                                    <th style="width: 50%;">Sources</th>
-                                    <th style="width: 50%;">Sinks</th>
+                                    <th style="width: 50%;">Rules</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <tr>
-                                    <td data-label="Name">
-                                        <ul>
-                                            <li>cookie</li>
-                                            <li>input.value</li>
-                                            <li>localStorage, sessionStorage</li>
-                                            <li>location</li>
-                                            <li>hash</li>
-                                            <li>query params</li>
-                                            <li>window.name</li>
-                                        </ul>
-                                    </td>
                                     <td data-label="Age">
                                         <ul>
                                             <li>document.write</li>
@@ -202,7 +192,7 @@
                                     </td>
 
                                 </tr>
-  
+
                             </tbody>
                         </table>
                     </div>
@@ -281,17 +271,8 @@
 
         <div class="content">
             <div class="ui message" style="margin: -20px -20px 0px -20px;">
-                <p>Are you sure you want to run IAST scan against <span id="scan_host" style="font-weight: 600;"></span>?</p>
+                <p>Are you sure you want to run SAST scan against <span id="scan_host" style="font-weight: 600;"></span>?</p>
             </div>
-
-            <!-- <p>Domains to scan (comma separated): <br />
-                <i>Example: <br /> domain.com, api.domain.com, subdomain.domain.com, www.domain.com</i>
-                <br />
-                <b>OR</b>
-                <br />
-                <i>*.domain.com - to scan all subdomains</i>
-            </p> -->
-            <!-- <textarea id="scan_domains" style="width: 100%; min-height: 100px;"></textarea> -->
         </div>
         <div class="actions">
             <div class="ui cancel button">Cancel</div>

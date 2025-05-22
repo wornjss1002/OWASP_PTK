@@ -9,7 +9,7 @@
     <meta content="Penetration Testing Kit, request builder, traffic recording, macro recording" name="keywords" />
     <meta content="PPType" name="author" />
     <meta content="#ffffff" name="theme-color" />
-    <title>OWASP Penetration Testing Kit - DAST (R-Attacker)</title>
+    <title>OWASP Penetration Testing Kit - DAST (Dynamic Application Security Testing)</title>
 
     <script src="../packages/browser-polyfill/browser-polyfill.min.js"></script>
     <script src="../packages/jquery/jquery.min.js"></script>
@@ -138,43 +138,43 @@
                                         </div>
                                         <br />
                                         <div class="ui mini statistic left floated" style="margin-top: 5px;">
-                                            <div class="value" id="attacks_count">
-                                                0
-                                            </div>
                                             <div class="label">
                                                 Attacks
                                             </div>
-                                        </div>
-                                        <div class="ui mini statistic left floated" style="margin-top: 5px;">
-                                            <div class="value" id="vulns_count">
+                                            <div class="value" id="attacks_count">
                                                 0
                                             </div>
+                                        </div>
+                                        <div class="ui mini statistic left floated" style="margin-top: 5px;">
                                             <div class="label">
                                                 Findings
                                             </div>
-                                        </div>
-                                        <div class="ui mini statistic right floated" style="margin-top: 5px;">
-                                            <div class="value" id="low_count">
+                                            <div class="value" id="vulns_count">
                                                 0
                                             </div>
+                                        </div>
+                                        <div class="ui mini statistic right floated" style="margin-top: 5px;">
                                             <div class="label"><i class="exclamation triangle yellow icon"></i>
                                                 Low
                                             </div>
-                                        </div>
-                                        <div class="ui mini statistic right floated" style="margin-top: 5px;">
-                                            <div class="value" id="medium_count">
+                                            <div class="value" id="low_count">
                                                 0
                                             </div>
+                                        </div>
+                                        <div class="ui mini statistic right floated" style="margin-top: 5px;">
                                             <div class="label"><i class="exclamation triangle orange icon"></i>
                                                 Medium
                                             </div>
-                                        </div>
-                                        <div class="ui mini statistic right floated" style="margin-top: 5px;">
-                                            <div class="value" id="high_count">
+                                            <div class="value" id="medium_count">
                                                 0
                                             </div>
+                                        </div>
+                                        <div class="ui mini statistic right floated" style="margin-top: 5px;">
                                             <div class="label"><i class="exclamation triangle red icon"></i>
                                                 High
+                                            </div>
+                                            <div class="value" id="high_count">
+                                                0
                                             </div>
                                         </div>
                                     </div>
@@ -190,7 +190,7 @@
             </table>
 
             <div style="height: 100%;display:none" id="welcome_message">
-                <div class="ui large message" style="height:100%;width: 100%;position: absolute; top: 80px;z-index: 1;">
+                <div class="ui message" style="height:100%;width: 100%;position: absolute; top: 80px;z-index: 1;">
                     <!-- <div class="ui blue  message"
                         style="margin-top: -13px;margin-left: -20px;margin-right: -20px;height: 63px;">
                         <div class="header">Try PTK+ to get Pro attacks</div>
@@ -201,7 +201,9 @@
                         </div>
                     </div> -->
                     <div class="content" style="padding-bottom: 10px;">
-                    DAST stands for Dynamic Application Security Testing. It's a method of security testing where a running application is actively tested and probed using real traffic and requests.
+                        DAST, or Dynamic Application Security Testing, is a security testing method that analyzes a
+                        running application by simulating real-world attacks to identify vulnerabilities, much like a
+                        penetration tester.
                     </div>
                     <div class="header">How to scan an application:</div>
                     <div class="content" style="margin-top: -15px;">
@@ -298,11 +300,11 @@
 
     <div id="run_scan_dlg" class="ui tiny modal coupled second" style="display: none;">
         <i class="close icon"></i>
-        <div class="header">Confirm scan run</div>
+        <div class="header">Confirm scan execution</div>
 
         <div class="content">
             <div class="ui message" style="margin: -20px -20px 0px -20px;">
-                <p>You are about running attacks on <span id="scan_host" style="font-weight: 600;"></span></p>
+                <p>Are you sure you want to run DAST scan against <span id="scan_host" style="font-weight: 600;"></span>?</p>
             </div>
             <p>Domains to scan (comma separated): <br />
                 <i>Example: <br /> domain.com, api.domain.com, subdomain.domain.com, www.domain.com</i>

@@ -1,11 +1,11 @@
 /* Author: Denis Podgurskii */
-import { ptk_controller_sca } from "../../../controller/sca.js"
+import { ptk_controller_sast } from "../../../controller/sast.js"
 import { ptk_controller_rbuilder } from "../../../controller/rbuilder.js"
 import { ptk_utils } from "../../../background/utils.js"
 import { ptk_decoder } from "../../../background/decoder.js"
 import * as rutils from "../js/rutils.js"
 
-const controller = new ptk_controller_sca()
+const controller = new ptk_controller_sast()
 const request_controller = new ptk_controller_rbuilder()
 const decoder = new ptk_decoder()
 
@@ -29,7 +29,7 @@ jQuery(function () {
     $(document).on("click", ".generate_report", function () {
         browser.windows.create({
             type: 'popup',
-            url: browser.runtime.getURL("/ptk/browser/report.html?sca_report")
+            url: browser.runtime.getURL("/ptk/browser/report.html?sast_report")
         })
     })
 
@@ -185,7 +185,7 @@ jQuery(function () {
         controller.init().then(function (result) {
             if (Object.keys(result.scanResult?.items).length > 0) {
                 let blob = new Blob([JSON.stringify(result.scanResult)], { type: 'text/plain' })
-                let fName = "PTK_SCA_scan.json"
+                let fName = "PTK_SAST_scan.json"
 
                 let downloadLink = document.createElement("a")
                 downloadLink.download = fName
@@ -220,7 +220,7 @@ jQuery(function () {
                 }
                 $('#import_export_dlg').modal('hide')
             }).catch(e => {
-                $('#result_message').text('Could not import SCA scan')
+                $('#result_message').text('Could not import SAST scan')
                 $('#result_dialog').modal('show')
             })
         }
@@ -243,7 +243,7 @@ jQuery(function () {
             }
             $('#import_export_dlg').modal('hide')
         }).catch(e => {
-            $('#result_message').text('Could not import SCA scan')
+            $('#result_message').text('Could not import SAST scan')
             $('#result_dialog').modal('show')
         })
     })
@@ -333,20 +333,13 @@ jQuery(function () {
 
     $(document).on("bind_stats", function (e, scanResult) {
         if (scanResult?.stats) {
-            bindStats(scanResult.stats)
+            rutils.bindStats(scanResult.stats, 'sast')
             if (scanResult.stats.vulnsCount > 0) {
                 $('#filter_vuln').trigger("click")
             }
         }
         return false
     })
-
-    function bindStats(stats) {
-        $('#vulns_count').text(stats.findingsCount)
-        $('#high_count').text(stats.high)
-        $('#medium_count').text(stats.medium)
-        $('#low_count').text(stats.low)
-    }
 
 
     $.fn.selectRange = function (start, end) {
@@ -365,48 +358,9 @@ jQuery(function () {
             //bindModules(result)
         }
     })
-    $('.ui.accordion').accordion({
-        onOpen: function () {
-            let index = $(this).find('input[name="requestId"]').val()
-            $('#filter_vuln').removeClass('active')
-            $('#filter_all').addClass('active')
-            $('.attack_info').hide()
-            $('.attack_info.' + index).show()
 
-            let stats = {
-                attacksCount: $('.attack_info.' + index).length,
-                vulnsCount: $('.attack_info.success.' + index).length,
-                high: $('.attack_info.success.High.' + index).length,
-                medium: $('.attack_info.success.Medium.' + index).length,
-                low: $('.attack_info.success.Low.' + index).length
-            }
-
-            bindStats(stats)
-
-
-        },
-        onClose: function () {
-            let index = $(this).find('input[name="requestId"]').val()
-            $('#filter_vuln').removeClass('active')
-            $('#filter_all').addClass('active')
-            $('.attack_info').show()
-
-            let stats = {
-                attacksCount: $('.attack_info').length,
-                vulnsCount: $('.attack_info.success').length,
-                high: $('.attack_info.success.High').length,
-                medium: $('.attack_info.success.Medium').length,
-                low: $('.attack_info.success.Low').length
-            }
-
-            bindStats(stats)
-        }
-    })
 })
 
-function filterByRequestId(requestId) {
-
-}
 
 function showWelcomeForm() {
     $('#welcome_message').show()
@@ -457,11 +411,6 @@ function changeView(result) {
     }
 }
 
-function cleanScanResult() {
-    $("#attacks_info").html("")
-    $('#attacks_count').text(0)
-    $('#vulns_count').text(0)
-}
 
 function bindScanResult(result) {
     if (result.scanResult) {
@@ -469,19 +418,18 @@ function bindScanResult(result) {
         $("#progress_message").hide()
         $('.generate_report').show()
         $('.save_report').show()
+        //$('.exchange').show()
+        //$('#request_info').html("")
         $('#attacks_info').html("")
         hideWelcomeForm()
-        let stats = {
-            findingsCount: 0,
-            high: 0,
-            medium: 0,
-            low: 0
-        }
+
         for (let i in result.scanResult.items) {
             let item = result.scanResult.items[i]
             item.requestId = i
-            $("#attacks_info").append(rutils.bindSCAAttack(item, i))
+            $("#attacks_info").append(rutils.bindSASTAttack(item, i))
         }
+
+        rutils.sortAttacks()
         $(document).trigger("bind_stats", result.scanResult)
     }
 }
@@ -494,27 +442,6 @@ function bindModules(result) {
     })
     bindTable('#tbl_modules', { data: dt })
 }
-
-function bindRequest(info, requestId) {
-    let item = `
-                <div>
-                <div class="title short_message_text"  style="overflow-y: hidden;height: 34px;background-color: #eeeeee;margin:1px 0 0 0;cursor:pointer; position: relative">
-                    <i class="dropdown icon"></i> ${ptk_utils.escapeHtml(info.location)}<i class="filter icon" style="float:right; position: absolute; top: 3px; right: -3px;" title="Filter by request"></i>
-                    
-                </div>
-               
-
-                `
-    return item
-}
-
-
-function bindAttackProgress(message) {
-    $("#progress_attack_name").text(message.info.name)
-    $("#progress_message").show()
-}
-
-
 
 
 ////////////////////////////////////

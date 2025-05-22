@@ -71,7 +71,7 @@ jQuery(function () {
                         controller.runBackroungScan(result.activeTab.tabId, h).then(function (result) {
                             $("#request_info").html("")
                             $("#attacks_info").html("")
-                            //$(document).trigger("bind_stats", result.scanResult)
+                            $(document).trigger("bind_stats", result.scanResult)
                             changeView(result)
                         })
                     }
@@ -333,22 +333,13 @@ jQuery(function () {
 
     $(document).on("bind_stats", function (e, scanResult) {
         if (scanResult?.stats) {
-            bindStats(scanResult.stats)
+            rutils.bindStats(scanResult.stats, 'iast')
             if (scanResult.stats.vulnsCount > 0) {
                 $('#filter_vuln').trigger("click")
             }
         }
         return false
     })
-
-    function bindStats(stats) {
-        $('#attacks_count').text(stats.attacksCount)
-        $('#vulns_count').text(stats.vulnsCount)
-        $('#high_count').text(stats.high)
-        $('#medium_count').text(stats.medium)
-        $('#low_count').text(stats.low)
-    }
-
 
     $.fn.selectRange = function (start, end) {
         var e = document.getElementById($(this).attr('id')); // I don't know why... but $(this) don't want to work today :-/
@@ -366,43 +357,7 @@ jQuery(function () {
             //bindModules(result)
         }
     })
-    $('.ui.accordion').accordion({
-        onOpen: function () {
-            let index = $(this).find('input[name="requestId"]').val()
-            $('#filter_vuln').removeClass('active')
-            $('#filter_all').addClass('active')
-            $('.attack_info').hide()
-            $('.attack_info.' + index).show()
 
-            let stats = {
-                attacksCount: $('.attack_info.' + index).length,
-                vulnsCount: $('.attack_info.success.' + index).length,
-                high: $('.attack_info.success.High.' + index).length,
-                medium: $('.attack_info.success.Medium.' + index).length,
-                low: $('.attack_info.success.Low.' + index).length
-            }
-
-            bindStats(stats)
-
-
-        },
-        onClose: function () {
-            let index = $(this).find('input[name="requestId"]').val()
-            $('#filter_vuln').removeClass('active')
-            $('#filter_all').addClass('active')
-            $('.attack_info').show()
-
-            let stats = {
-                attacksCount: $('.attack_info').length,
-                vulnsCount: $('.attack_info.success').length,
-                high: $('.attack_info.success.High').length,
-                medium: $('.attack_info.success.Medium').length,
-                low: $('.attack_info.success.Low').length
-            }
-
-            bindStats(stats)
-        }
-    })
 })
 
 function filterByRequestId(requestId) {

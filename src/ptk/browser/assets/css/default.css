@@ -41,7 +41,8 @@ footer p {
     color: rgba(255, 255, 255, 0.5);
 }
 
-ul, ol {
+ul,
+ol {
     padding-left: 2rem;
 }
 
@@ -84,11 +85,14 @@ blockquote p:last-child {
     margin-bottom: 0;
 }
 
-blockquote ul:last-child, blockquote ol:last-child {
+blockquote ul:last-child,
+blockquote ol:last-child {
     margin-bottom: 0;
 }
 
-blockquote footer, blockquote small, blockquote .small {
+blockquote footer,
+blockquote small,
+blockquote .small {
     margin-bottom: 0.5rem;
     display: block;
     font-size: 80%;
@@ -97,7 +101,9 @@ blockquote footer, blockquote small, blockquote .small {
     padding: 0;
 }
 
-blockquote footer:before, blockquote small:before, blockquote .small:before {
+blockquote footer:before,
+blockquote small:before,
+blockquote .small:before {
     content: "— ";
 }
 
@@ -248,13 +254,16 @@ nav.ui.menu.ui.container>.right.menu>a.item:last-child {
     .right.rail {
         left: 827px !important;
     }
+
     .ui.demo.container {
         margin-left: calc((100% - 1127px)/2) !important;
         margin-right: 387px !important;
     }
+
     .ui.demo.container>.tab {
         width: 827px;
     }
+
     #content .vertical.segment:not(.center) .container {
         width: 827px;
         margin-left: calc((100% - 1127px)/2) !important;
@@ -266,13 +275,16 @@ nav.ui.menu.ui.container>.right.menu>a.item:last-child {
         left: 732px !important;
         width: 200px !important;
     }
+
     .ui.demo.container {
         margin-left: calc((100% - 933px)/2) !important;
         margin-right: 250px !important;
     }
+
     .ui.demo.container>.tab {
         width: 732px;
     }
+
     #content .vertical.segment:not(.center) .container {
         width: 732px;
         margin-left: calc((100% - 933px)/2) !important;
@@ -284,13 +296,16 @@ nav.ui.menu.ui.container>.right.menu>a.item:last-child {
         left: 550px !important;
         width: 160px !important;
     }
+
     .ui.demo.container {
         margin-left: calc((100% - 723px)/2) !important;
         margin-right: 250 !important;
     }
+
     .ui.demo.container>.tab {
         width: 550px;
     }
+
     #content .vertical.segment:not(.center) .container {
         width: 550px;
         margin-left: calc((100% - 723px)/2) !important;
@@ -301,13 +316,16 @@ nav.ui.menu.ui.container>.right.menu>a.item:last-child {
     .right.rail {
         display: none;
     }
+
     .ui.demo.container {
         margin-left: auto;
         margin-right: auto;
     }
+
     .ui.demo.container>.tab {
         width: auto;
     }
+
     #content .vertical.segment .container {
         width: auto;
     }
@@ -341,19 +359,24 @@ nav.ui.menu.ui.container>.right.menu>a.item:last-child {
     bottom: auto;
 }
 
-.latex sub, .latex sup {
+.latex sub,
+.latex sup {
     text-transform: uppercase;
     top: auto;
     bottom: auto;
 }
 
-.tex sub, .latex sub {
+.tex sub,
+.latex sub {
     vertical-align: -0.5ex;
     margin-left: -0.1667rem;
     margin-right: -0.125rem;
 }
 
-.tex, .latex, .tex sub, .latex sub {
+.tex,
+.latex,
+.tex sub,
+.latex sub {
     font-size: 1rem;
 }
 
@@ -367,12 +390,15 @@ nav.ui.menu.ui.container>.right.menu>a.item:last-child {
     .desktop-only {
         display: none;
     }
+
     .ui.menu .item.desktop-only {
         display: none;
     }
+
     .ui[class*="padded"].segment {
         padding: 1.5rem;
     }
+
     .ui.grid .ui.stackable.grid {
         margin-left: 0 !important;
         margin-right: 0 !important;
@@ -521,7 +547,8 @@ nav.ui.menu.ui.container>.right.menu>a.item:last-child {
     font-weight: bold;
 }
 
-.close:hover, .close:focus {
+.close:hover,
+.close:focus {
     color: black;
     text-decoration: none;
     cursor: pointer;
@@ -565,8 +592,8 @@ nav.ui.menu.ui.container>.right.menu>a.item:last-child {
     width: 100%;
 }
 
-#mainMenu > .item{
-   padding: 10px;
+#mainMenu>.item {
+    padding: 10px;
 }
 
 .request_methods .menu.transition {
@@ -839,74 +866,82 @@ nav.ui.menu.ui.container>.right.menu>a.item:last-child {
     z-index: 1;
 }
 
-.buttons .oneway .button{
+.buttons .oneway .button {
     min-width: 90px;
 }
 
-.buttons .twoway .button{
+.buttons .twoway .button {
     min-width: 70px;
 }
 
-.notifications .menu.left.transition.visible{
+.notifications .menu.left.transition.visible {
     margin-top: 5px;
 }
 
-.cookie_column_first{
+.cookie_column_first {
     width: 8% !important;
     min-width: 70px;
 }
-.cookie_column_second{
+
+.cookie_column_second {
     width: 48% !important;
 }
-.cookie_column_third{
+
+.cookie_column_third {
     width: 44% !important;
 }
 
-.proxy_column_1{
+.proxy_column_1 {
     width: 55px !important;
 }
-.proxy_column_2{
+
+.proxy_column_2 {
     min-width: 100px !important;
 }
-.proxy_column_3{
+
+.proxy_column_3 {
     min-width: 250px !important;
 }
-.proxy_column_4{
+
+.proxy_column_4 {
     width: 90% !important;
 }
 
-.info_tab{
+.info_tab {
     height: 45px !important;
     border: none !important;
     margin-top: 0px !important;
     padding-top: 0px !important;
     padding-right: 0px !important;
-    margin-right: 0px !important; 
+    margin-right: 0px !important;
 }
 
-.info_tab .short_message_text{
+.info_tab .short_message_text {
     padding-top: 9px !important;
-} 
-.info_tab .icons{
-    margin-right: 0px !important; 
-} 
+}
 
-.info_tab .buttons{
-    padding-top: 4px !important; 
-    margin-right: 0px !important; 
-} 
-.proxy_child_row{
+.info_tab .icons {
+    margin-right: 0px !important;
+}
+
+.info_tab .buttons {
+    padding-top: 4px !important;
+    margin-right: 0px !important;
+}
+
+.proxy_child_row {
     transform: rotateX(180deg);
 }
+
 .proxy_child_row::-webkit-scrollbar {
     height: 8px !important;
     /* remove scrollbar space */
     background: transparent !important;
-    
+
     /* optional: just make scrollbar invisible */
 }
 
-.scan_info{
+.scan_info {
     float: left;
     position: absolute !important;
     top: -8px;
@@ -926,7 +961,12 @@ nav.ui.menu.ui.container>.right.menu>a.item:last-child {
     background: transparent !important;
 }
 
-.dt-empty-footer .dt-search{
+.dt-empty-footer .dt-search {
     display: none;
 }
 
+
+.disable {
+    pointer-events: none;
+    opacity: 0.4;
+}

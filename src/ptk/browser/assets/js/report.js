@@ -3,6 +3,7 @@ import { ptk_controller_index } from "../../../controller/index.js"
 import { ptk_controller_sca } from "../../../controller/sca.js"
 import { ptk_controller_rattacker } from "../../../controller/rattacker.js"
 import { ptk_controller_iast } from "../../../controller/iast.js"
+import { ptk_controller_sast } from "../../../controller/sast.js"
 import { ptk_utils, ptk_jwtHelper } from "../../../background/utils.js"
 import { ptk_decoder } from "../../../background/decoder.js"
 import * as rutils from "../js/rutils.js"
@@ -19,6 +20,7 @@ jQuery(function () {
     const sca_controller = new ptk_controller_sca()
     const rattacker_controller = new ptk_controller_rattacker()
     const iast_controller = new ptk_controller_iast()
+    const sast_controller = new ptk_controller_sast()
 
 
     $('#filter_all').on("click", function () {
@@ -35,6 +37,18 @@ jQuery(function () {
 
     $('#print').on("click", function () {
         window.print()
+    })
+
+    $('.icon.hideshowreport').on("click", function () {
+        if ($(this).hasClass('minus')) {
+            $(this).removeClass('minus')
+            $(this).addClass('plus')
+            $(this).parent().next().hide()
+        } else {
+            $(this).removeClass('plus')
+            $(this).addClass('minus')
+            $(this).parent().next().show()
+        }
     })
 
     async function bindInfo(host) {
@@ -175,8 +189,10 @@ jQuery(function () {
 
             let { jwtToken, decodedToken } = jwtHelper.checkJWT(JSON.stringify(dt), jwtHelper.headersRegex)
             if (jwtToken) {
-                let jwt = JSON.parse(decodedToken)
-                tokens.push(['headers', '<pre>' + JSON.stringify(jwt["payload"], null, 2) + '</pre>', jwtToken[1]])
+                try {
+                    let jwt = JSON.parse(decodedToken)
+                    tokens.push(['headers', '<pre>' + JSON.stringify(jwt["payload"], null, 2) + '</pre>', jwtToken[1]])
+                } catch (e) { }
             }
             bindTokens()
         }
@@ -209,73 +225,6 @@ jQuery(function () {
         }
     })
 
-    // -- SCA -- //
-    sca_controller.dt = []
-    bindTable('#tbl_cve', {
-        "columns": [{ width: "15%" }, { width: "15%" }, { width: "70%" }]
-    })
-
-
-
-    sca_controller.init().then((res) => {
-
-        if (res.scan_result?.vulns?.length > 0 && index_controller.url) {
-            let target = new URL(index_controller.url).host
-            let sca_target = new URL(res.scan_result.url).host
-            if (target == sca_target) {
-                bindVulns(res.scan_result.vulns)
-                $('#cve_report').show()
-            }
-        }
-    })
-
-    function bindVulns(dt) {
-        let ds = new Array()
-        if (dt.length > 0) {
-            Object.values(dt).forEach(item => {
-                if (item[1][0].vulnerabilities) {
-                    let vulnsInfo = '<div class="ui attached info message"><b>Found in:</b> ' + item[0] + '</div>'
-                    vulnsInfo += prepareVulns(item[1][0].vulnerabilities)
-
-                    ds.push([item[1][0].component, item[1][0].version, vulnsInfo])
-                }
-            })
-            let params = { "data": ds, }
-            bindTable('#tbl_cve', params)
-            $('.loader.cve').hide()
-        }
-        else {
-            $('#cve_report').hide()
-        }
-
-    }
-
-    function prepareVulns(vulns) {
-        let ret = '<table class="ui celled attached table  responsive nowrap unstackable dataTable no-footer"><thead><th style="width:10%">Severity</th><th style="width:60%">Summary</th><th style="width:30%">Proof</th></thead>'
-        Object.values(vulns).forEach(item => {
-            ret += `<tr class="${(item.severity == 'high' ? 'ui red' : '')}">`
-            ret += `<td>${(item.severity.charAt(0).toUpperCase() + item.severity.slice(1))}</td>`
-            ret += `<td>${(item.identifiers.summary ? item.identifiers.summary : 'N/A')}</td>`
-            let str = ''
-            if (item.identifiers.CVE) {
-                Object.values(item.identifiers.CVE).forEach(link => {
-                    str += `<a target="_blank" href="https://www.cvedetails.com/cve/${link}/">${link}</a><br>`
-                })
-            }
-            else {
-
-                Object.values(item.info).forEach(link => {
-                    str += `<a target="_blank" href="${link}"><i class="external alternate icon"></i></a><br>`
-                })
-
-            }
-            ret += "<td>" + str + "</td>"
-            ret += "</tr>"
-        })
-        ret += '</table>'
-        return ret
-    }
-
     // -- IAST -- //
 
     function generateIAST(result) {
@@ -286,10 +235,67 @@ jQuery(function () {
         result.scanResult.items.forEach(item => {
             $("#iast_report_items").append(rutils.bindIASTAttack(item))
         })
+        $('#iast_report #vulns_count').text(result.scanResult.stats.findingsCount)
+        $('#iast_report #high_count').text(result.scanResult.stats.high)
+        $('#iast_report #medium_count').text(result.scanResult.stats.medium)
+        $('#iast_report #low_count').text(result.scanResult.stats.low)
+
         $(".content.stacktrace").show()
         $('.loader.iast').hide()
     }
 
+    // -- SAST -- //
+
+    function generateSAST(result) {
+        if (!result.scanResult?.items?.length) return
+        $('#sast_report').show()
+
+        let report = ""
+        result.scanResult.items.forEach(item => {
+            $("#sast_report_items").append(rutils.bindSASTAttack(item))
+        })
+
+        $('#sast_report #vulns_count').text(result.scanResult.stats.findingsCount)
+        $('#sast_report #high_count').text(result.scanResult.stats.high)
+        $('#sast_report #medium_count').text(result.scanResult.stats.medium)
+        $('#sast_report #low_count').text(result.scanResult.stats.low)
+
+        $(".content.stacktrace").show()
+        $('.loader.sast').hide()
+    }
+
+
+    // -- SCA -- //
+
+    function generateSCA(result) {
+        if (!result.scanResult?.items?.length) return
+        $('#sca_report').show()
+
+        let stats = {
+            findingsCount: 0,
+            high: 0,
+            medium: 0,
+            low: 0
+        }
+        result.scanResult.items.forEach(item => {
+            $("#sca_report_items").append(rutils.bindSCAAttack(item))
+            try {
+                let vulns = item[0][1][0]['vulnerabilities']
+                for (let i = 0; i < vulns.length; i++) {
+                    stats.findingsCount++
+                    if (vulns[i].severity == 'high') stats.high++
+                    if (vulns[i].severity == 'medium') stats.medium++
+                    if (vulns[i].severity == 'low') stats.low++
+                }
+            } catch (e) { }
+        })
+        $('#sca_report #vulns_count').text(result.scanResult.stats.findingsCount)
+        $('#sca_report #high_count').text(result.scanResult.stats.high)
+        $('#sca_report #medium_count').text(result.scanResult.stats.medium)
+        $('#sca_report #low_count').text(result.scanResult.stats.low)
+
+        $('.loader.sca').hide()
+    }
 
     // -- R-Attacker -- //
 
@@ -330,11 +336,11 @@ jQuery(function () {
         //             $("#rattacker_content").append(bindReportItem(item.attacks[y], item.original))
         //     }
         // }
-        $('#attacks_count').text(result.scanResult.stats.attacksCount)
-        $('#vulns_count').text(result.scanResult.stats.vulnsCount)
-        $('#high_count').text(result.scanResult.stats.high)
-        $('#medium_count').text(result.scanResult.stats.medium)
-        $('#low_count').text(result.scanResult.stats.low)
+        $('#rattacker_report #attacks_count').text(result.scanResult.stats.attacksCount)
+        $('#rattacker_report #vulns_count').text(result.scanResult.stats.vulnsCount)
+        $('#rattacker_report #high_count').text(result.scanResult.stats.high)
+        $('#rattacker_report #medium_count').text(result.scanResult.stats.medium)
+        $('#rattacker_report #low_count').text(result.scanResult.stats.low)
         $('.loader.rattacker').hide()
 
 
@@ -375,7 +381,7 @@ jQuery(function () {
         }
         let target = original?.request?.url ? original.request.url : ""
         let request = info.request?.raw ? info.request.raw : original.request.raw
-        let response = info.response?.raw ? info.response.raw : original.response.raw
+        let response = info.response?.raw ? info.response.raw : original.response?.raw ? original.response.raw : ''
         let item = `<div class="attack_info ${attackClass} ui segment">
                         <div class="ui ${color} message" style="margin-bottom: 0px;">
                             <div class="content">
@@ -388,17 +394,16 @@ jQuery(function () {
                             </div>
                         </div>
                     <div class="two fields" >
-                        <div class="one field">
+                        <div class="one field" style="min-width: 50% !important;">
                             <textarea class="codemirror_area" style="width:100%;  border: solid 1px #cecece; padding: 1px;">${ptk_utils.escapeHtml(request)}</textarea>
                         </div>
-                        <div class="one field">
+                        <div class="one field" style="min-width: 50% !important;">
                             <textarea class="codemirror_area_html" style="width:100%;  border: solid 1px #cecece; padding: 1px;">${ptk_utils.escapeHtml(response)}</textarea>
                         </div>
                     </div></div>`
 
         return item
     }
-
 
     let params = new URLSearchParams(window.location.search)
     if (params.has('rattacker_report')) {
@@ -414,6 +419,20 @@ jQuery(function () {
         iast_controller.init().then(function (result) {
             bindInfo(result?.scanResult?.host)
             generateIAST(result)
+        })
+    } else if (params.has('sast_report')) {
+        $('#main').hide()
+        $('#sast_report').show()
+        sast_controller.init().then(function (result) {
+            bindInfo(result?.scanResult?.host)
+            generateSAST(result)
+        })
+    } else if (params.has('sca_report')) {
+        $('#main').hide()
+        $('#sca_report').show()
+        sca_controller.init().then(function (result) {
+            bindInfo(result?.scanResult?.host)
+            generateSCA(result)
         })
     } else if (params.has('full_report')) {
         index_controller.get().then(() => {
@@ -438,6 +457,16 @@ jQuery(function () {
             iast_controller.init().then(function (result) {
                 if (host == result?.scanResult?.host)
                     generateIAST(result)
+            })
+
+            sast_controller.init().then(function (result) {
+                if (host == result?.scanResult?.host)
+                    generateSAST(result)
+            })
+
+            sca_controller.init().then(function (result) {
+                if (host == result?.scanResult?.host)
+                    generateSCA(result)
             })
         })
     }

@@ -203,7 +203,7 @@ function matchesTaint(input) {
 })();
 
 
-function reportFinding({ type, sink, matched, source, context = {} }) {
+function reportFinding({ type, sink, matched, source, severity, context = {} }) {
     const loc = window.location.href;
     let trace = '';
     try {
@@ -218,6 +218,7 @@ function reportFinding({ type, sink, matched, source, context = {} }) {
         context,
         location: loc,
         trace: trace,
+        severity: severity,
         timestamp: Date.now()
     };
 
@@ -277,7 +278,7 @@ function scanInlineEvents(htmlFragment) {
                     sink: name,        // e.g. "onclick" or "onerror"
                     matched: m.raw,
                     source: m.source,
-                    severity: 'high',
+                    severity: 'medium',
                     context: {
                         element: el.outerHTML,
                         tag: el.tagName,
@@ -305,7 +306,7 @@ function scanInlineEvents(htmlFragment) {
                 sink: 'eval',
                 matched: m.raw,
                 source: m.source,
-                severity: 'high',
+                severity: 'medium',
                 context: {
                     element: el,
                     value: code
@@ -329,7 +330,7 @@ function scanInlineEvents(htmlFragment) {
                     sink: 'Function.constructor',
                     matched: m.raw,
                     source: m.source,
-                    severity: 'high',
+                    severity: 'medium',
                     context: {
                         element: el,
                         value: args
@@ -347,6 +348,7 @@ function scanInlineEvents(htmlFragment) {
                     sink: 'Function.apply',
                     matched: m.raw,
                     source: m.source,
+                    severity: 'medium',
                     context: { args }
                 });
             }
@@ -380,7 +382,7 @@ function scanInlineEvents(htmlFragment) {
                     sink: 'document.write',
                     matched: m.raw,
                     source: m.source,
-                    severity: 'high',
+                    severity: 'medium',
                     context: { value: html, element: el }
                 });
                 scanInlineEvents(html, m);
@@ -403,7 +405,7 @@ function scanInlineEvents(htmlFragment) {
                         sink: 'document.write',
                         matched: m.raw,
                         source: m.source,
-                        severity: 'high',
+                        severity: 'medium',
                         context: { value: html, element: el }
                     });
                     seen.add(node);
@@ -419,7 +421,7 @@ function scanInlineEvents(htmlFragment) {
                             sink: 'document.write',
                             matched: m.raw,
                             source: m.source,
-                            severity: 'high',
+                            severity: 'medium',
                             context: { value: html, element: el }
                         });
                         seen.add(node);
@@ -457,7 +459,7 @@ function scanInlineEvents(htmlFragment) {
                         sink: prop,
                         matched: m.raw,
                         source: m.source,
-                        severity: 'high',
+                        severity: 'medium',
                         context: { value: htmlString, element: el }
                     });
                     scanInlineEvents(htmlString, m);
@@ -489,7 +491,7 @@ function scanInlineEvents(htmlFragment) {
                     sink: 'insertAdjacentHTML',
                     matched: m.raw,
                     source: m.source,
-                    severity: 'high',
+                    severity: 'medium',
                     context: { value: htmlString, element: el, position: pos }
                 });
                 scanInlineEvents(htmlString, m);
@@ -519,7 +521,7 @@ function scanInlineEvents(htmlFragment) {
                         sink: trigger,
                         matched: m.raw,
                         source: m.source,
-                        severity: 'high',
+                        severity: 'medium',
                         context: {
                             element: el,
                             value: txt,
@@ -543,6 +545,7 @@ function scanInlineEvents(htmlFragment) {
                             sink: trigger,
                             matched: m.raw,
                             source: m.source,
+                            severity: 'medium',
                             context: {
                                 element: n.outerHTML,
                                 nodeType: 'ELEMENT_NODE',

@@ -61,6 +61,10 @@ function subtleMapping(jwk) {
         }
         case 'OKP': {
             switch (jwk.alg) {
+                case 'Ed25519':
+                    algorithm = { name: 'Ed25519' };
+                    keyUsages = jwk.d ? ['sign'] : ['verify'];
+                    break;
                 case 'EdDSA':
                     algorithm = { name: jwk.crv };
                     keyUsages = jwk.d ? ['sign'] : ['verify'];

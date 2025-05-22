@@ -13,16 +13,22 @@ setInterval(function () {
 }, 20000);
 
 
+(() => {
+    window.addEventListener('load', () => {
+        const scripts = Array.from(document.scripts).map(s => ({
+            src: s.src || null,
+            code: s.src ? null : s.innerText
+        }));
+        browser.runtime.sendMessage({
+            channel: "ptk_content_sast2background_sast",
+            type: "scripts_collected",
+            scripts: scripts
+        });
 
-// browser.runtime.sendMessage({
-//     channel: "ptk_content2iast",
-//     type: 'check'
-// }).then(function (result) {
-
-// }).catch(e => console.log(e))
+    });
 
 
-
+})();
 
 browser.runtime.onMessage.addListener(function (message, sender, sendResponse) {
     if (message.channel == "ptk_background2content" && message.type == "init") {
@@ -55,6 +61,13 @@ browser.runtime.onMessage.addListener(function (message, sender, sendResponse) {
 
         return Promise.resolve()
     }
+
+    if (message.channel == "ptk_background_iast2content") {
+        if (message.type == "clean iast result") {
+            localStorage.removeItem('ptk_iast_buffer');
+        }
+    }
+
     if (message.channel == "ptk_popup2content") {
         if (message.type == "get_storage") {
             browser.runtime.sendMessage({
