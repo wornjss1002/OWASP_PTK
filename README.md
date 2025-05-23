@@ -1,40 +1,48 @@
 # pentestkit
 
-The Penetration Testing Kit (PTK) browser extension is your all-in-one solution for streamlining your daily tasks in the realm of application security. Whether you’re a penetration tester, a Red Team member, or an AppSec practitioner, PTK enhances your efficiency and provides deep insights into your target application.
+Below is your OWASP PTK feature list with a new **Static Analysis (SAST)** brief added in:
 
-Key Features:
+---
 
-In-Browser IAST (Interactive Application Security Testing):
-PTK’s built-in IAST engine instruments your app at runtime—right in the browser—tracking taint flows and code execution to flag vulnerabilities as they occur. Catch issues like DOM-based XSS, unsafe eval/innerHTML usage, open-redirects, and more without leaving your dev tools.
+**The OWASP Penetration Testing Kit (PTK)** browser extension is your all-in-one solution for streamlining your daily AppSec tasks. Whether you’re a penetration tester, a Red Team member, or an AppSec practitioner, OWASP PTK enhances your efficiency and provides deep insights into your target application.
 
-Runtime Scanning (DAST & SCA):
-Perform Dynamic Application Security Testing and Software Composition Analysis on the fly. Identify SQL injection, command injection, reflected/stored XSS, SQL auth bypass, XPath injections, JWT attacks, and other complex threats.
+**Key Features:**
 
-JWT Inspector:
-Analyze, craft, and tamper with JSON Web Tokens. Generate keys, test null signatures, brute-force HMAC secrets, and inject malicious JWK, JKU or kid parameters.
+* **Runtime Scanning (DAST & IAST & SAST & SCA):**
+  Perform Dynamic Application Security Testing, Static Analysis, In-Browser IAST and Software Composition Analysis on the fly. Identify SQL injection, command injection, reflected/stored XSS, SQL auth bypass, XPath injections, JWT attacks, and other complex threats.
 
-Insightful Application Info:
-One-click visibility into tech stacks, WAFs, security headers, crawled links, and authentication flows.
+* **Static Analysis (SAST):**
+  PTK automatically parses loaded JavaScript, HTML, and CSS right in your browser—before any code ever runs. It flags unsafe patterns like `eval()`, `innerHTML`/`outerHTML` injection, insecure cryptographic calls, missing input sanitization, and common anti-patterns. 
 
-Built-in Proxy & Traffic Log:
-Capture all HTTP(S) traffic, replay requests in R-Builder or R-Attacker, and automate XSS, SQLi, and OS command injection.
+* **In-Browser IAST (Interactive Application Security Testing):**
+  PTK’s built-in IAST engine instruments your app at runtime—right in the browser—tracking taint flows and code execution to flag vulnerabilities as they occur. Catch issues like DOM-based XSS, unsafe `eval`/`innerHTML` usage, open-redirects, and more without leaving your dev tools.
 
-R-Builder for Request Tampering & Smuggling:
-Craft and manipulate HTTP requests, including complex request-smuggling techniques. Now with cURL import/export.
+* **JWT Inspector:**
+  Analyze, craft, and tamper with JSON Web Tokens. Generate keys, test null signatures, brute-force HMAC secrets, and inject malicious `jwk`, `jku`, or `kid` parameters.
 
-Cookie Management:
-Add, edit, remove, block, protect, export, and import cookies from a powerful in-browser editor.
+* **Insightful Application Info:**
+  One-click visibility into tech stacks, WAFs, security headers, crawled links, and authentication flows.
 
-Decoder/Encoder Utility:
-Instantly convert between UTF-8, Base64, MD5, URL-encode/decode, and more formats.
+* **Built-in Proxy & Traffic Log:**
+  Capture all HTTP(S) traffic, replay requests in R-Builder, and automate XSS, SQLi, and OS command injection.
 
-Swagger.IO Integration:
-Browse and interact with API endpoints directly from your Swagger documentation.
+* **R-Builder for Request Tampering & Smuggling:**
+  Craft and manipulate HTTP requests, including complex request-smuggling techniques. Now with cURL import/export.
 
-Selenium Integration:
-Shift left security by running automated Selenium tests with built-in vulnerability checks.
+* **Cookie Management:**
+  Add, edit, remove, block, protect, export, and import cookies from a powerful in-browser editor.
+
+* **Decoder/Encoder Utility:**
+  Instantly convert between UTF-8, Base64, MD5, URL-encode/decode, and more formats.
+
+* **Swagger.IO Integration:**
+  Browse and interact with API endpoints directly from your Swagger documentation.
+
+* **Selenium Integration:**
+  Shift left security by running automated Selenium tests with built-in vulnerability checks.
 
 Enhance your AppSec practice with PTK—the extension that makes your browser smarter and your testing faster. Install today and start uncovering vulnerabilities in real time!
+
 ## Development
 ```
 git clone git@github.com:DenisPodgurskii/pentestkit.git
