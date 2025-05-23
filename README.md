@@ -1,8 +1,3 @@
-# pentestkit
-
-Below is your OWASP PTK feature list with a new **Static Analysis (SAST)** brief added in:
-
----
 
 **The OWASP Penetration Testing Kit (PTK)** browser extension is your all-in-one solution for streamlining your daily AppSec tasks. Whether you’re a penetration tester, a Red Team member, or an AppSec practitioner, OWASP PTK enhances your efficiency and provides deep insights into your target application.
 
