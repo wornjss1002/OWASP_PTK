@@ -199,6 +199,7 @@ export class ptk_dashboard {
     }
 
     async msg_run_bg_scan(message) {
+        
         if (message.scans.dast) worker.ptk_app.rattacker.runBackroungScan(message.tabId, message.host, message.domains)
         if (message.scans.iast) worker.ptk_app.iast.runBackroungScan(message.tabId, message.host)
         if (message.scans.sast) worker.ptk_app.sast.runBackroungScan(message.tabId, message.host)
@@ -215,6 +216,7 @@ export class ptk_dashboard {
     }
 
     async msg_stop_bg_scan(message) {
+
         if (message.scans.dast) worker.ptk_app.rattacker.stopBackroungScan()
         if (message.scans.iast) worker.ptk_app.iast.stopBackroungScan()
         if (message.scans.sast) worker.ptk_app.sast.stopBackroungScan()
@@ -226,8 +228,8 @@ export class ptk_dashboard {
             sast: worker.ptk_app.sast.isScanRunning,
             sca: worker.ptk_app.sca.isScanRunning
         }
-
-        return Promise.resolve(Object.assign({}, self, worker.ptk_app.proxy.activeTab, { scans: scans }))
+    
+        return Promise.resolve(Object.assign({}, { scans: JSON.parse(JSON.stringify(scans)) }))
     }
 
     async msg_get(message) {

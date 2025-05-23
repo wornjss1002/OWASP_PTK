@@ -61,7 +61,7 @@ function collectTaintedSources() {
         } catch { };
     });
     if (window.name) add('window.name', window.name);
-    console.info('[IAST] Collected taints', raw);
+    //console.info('[IAST] Collected taints', raw);
     return raw;
 }
 window.__IAST_TAINTED__ = collectTaintedSources();
@@ -75,7 +75,7 @@ window.__IAST_TAINTED__ = collectTaintedSources();
         const hasAlnum = /[A-Za-z0-9]/.test(s);
         if (!hasAlnum && s !== '/') return;
         taints[key] = s;
-        console.info('[IAST] Updated source', key, s);
+        //console.info('[IAST] Updated source', key, s);
     };
     // Storage wrappers
     const proto = Storage.prototype;
@@ -223,17 +223,17 @@ function reportFinding({ type, sink, matched, source, severity, context = {} }) 
     };
 
     // 1) Console output
-    console.groupCollapsed(`%cIAST%c ${type}`,
-        'color:#d9534f;font-weight:bold', '');
-    console.log('• location:', loc);
-    console.log('• sink:    ', sink);
-    console.log('• source:  ', source);
-    console.log('• matched: ', matched);
-    // log any extra context fields
-    Object.entries(context).forEach(([k, v]) =>
-        console.log(`• ${k}:       `, v)
-    );
-    console.groupEnd();
+    // console.groupCollapsed(`%cIAST%c ${type}`,
+    //     'color:#d9534f;font-weight:bold', '');
+    // console.log('• location:', loc);
+    // console.log('• sink:    ', sink);
+    // console.log('• source:  ', source);
+    // console.log('• matched: ', matched);
+    // // log any extra context fields
+    // Object.entries(context).forEach(([k, v]) =>
+    //     console.log(`• ${k}:       `, v)
+    // );
+    // console.groupEnd();
 
 
     // 2) PostMessage to background (sanitized)
@@ -254,7 +254,7 @@ function reportFinding({ type, sink, matched, source, severity, context = {} }) 
 
         window.postMessage(msg, '*');
     } catch (e) {
-        console.error('IAST reportFinding.postMessage failed:', e);
+        console.log('IAST reportFinding.postMessage failed:', e);
     }
 }
 
@@ -289,7 +289,7 @@ function scanInlineEvents(htmlFragment) {
             });
         });
     } catch (e) {
-        console.warn('[IAST] inline-event scan error', e);
+        console.log('[IAST] inline-event scan error', e);
     }
 }
 

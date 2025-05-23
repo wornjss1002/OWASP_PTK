@@ -333,6 +333,8 @@ $(document).on("click", ".dast_scan_stop, .iast_scan_stop, .sast_scan_stop, .sca
     }
     controller.stopBackroungScan(s).then(function (result) {
         changeScanView(result)
+    }).catch(e=>{
+        console.log(e)
     })
 })
 

@@ -53,7 +53,7 @@ export class ptk_request_manager {
         }
     }
 
-    resort(storage){
+    resort(storage) {
         let i = 0
         Object.keys(storage).sort(function (a, b) { return storage[a].sort - storage[b].sort }).forEach(function (key) {
             storage[key].sort = i
@@ -81,7 +81,7 @@ export class ptk_request_manager {
     async msg_parse_request(message) {
         let rbObj = ptk_request.parseRawRequest(message.raw, message.opts)
         if (message.formId) {
-            
+
             if (!this.storage[message.formId]) {
                 this.storage[message.formId] = rbObj
                 this.storage[message.formId].sort = Object.keys(this.storage).length
@@ -148,7 +148,7 @@ export class ptk_request_manager {
     }
 
     async msg_sync_storage(message) {
-        if(message.storage){
+        if (message.storage) {
             this.storage = this.resort(message.storage)
             await ptk_storage.setItem(this.storageKey, this.storage)
         }
@@ -407,12 +407,18 @@ export class ptk_request {
             }
             let trackingRequest = null
             if (self.trackingRequest) {
-                trackingRequest = {}
-                for (let value of self.trackingRequest.values()) {
-                    trackingRequest = value
-                    break
+                //trackingRequest = {}
+                for (let key of self.trackingRequest.keys()) {
+                    if (key != 'originalHeaders') {
+                        trackingRequest = self.trackingRequest.get(key)
+                        break
+                    }
                 }
-                if (!response.redirected)
+                // for (let value of self.trackingRequest.values()) {
+                //     trackingRequest = value
+                //     break
+                // }
+                if (!response.redirected && trackingRequest)
                     rbSchema.request.headers = trackingRequest.request.requestHeaders
             }
 

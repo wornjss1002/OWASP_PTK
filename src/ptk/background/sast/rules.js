@@ -81,6 +81,7 @@ const insertAdjacentHTMLRule = {
             CallExpression(node) {
                 if (
                     node.callee.type === 'MemberExpression' &&
+                    node.callee.property.name &&
                     node.callee.property.name.toLowerCase() === 'insertadjacenthtml'
                 ) {
                     issues.push({ 
@@ -107,6 +108,7 @@ const appendChildRule = {
             CallExpression(node) {
                 if (
                     node.callee.type === 'MemberExpression' &&
+                    node.callee.property.name &&
                     node.callee.property.name === 'appendChild'
                 ) {
                     issues.push({ 
