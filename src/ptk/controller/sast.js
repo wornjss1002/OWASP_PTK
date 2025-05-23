@@ -1,9 +1,9 @@
 /* Author: Denis Podgurskii */
-export class ptk_controller_sca {
+export class ptk_controller_sast {
 
     async runBackroungScan(tabId, host){
         return browser.runtime.sendMessage({
-            channel: "ptk_popup2background_sca",
+            channel: "ptk_popup2background_sast",
             type: "run_bg_scan",
             tabId: tabId,
             host: host
@@ -14,7 +14,7 @@ export class ptk_controller_sca {
 
     async stopBackroungScan(){
         return browser.runtime.sendMessage({
-            channel: "ptk_popup2background_sca",
+            channel: "ptk_popup2background_sast",
             type: "stop_bg_scan"
         }).then(response => {
             return response
@@ -24,7 +24,7 @@ export class ptk_controller_sca {
 
     async init() {
         return browser.runtime.sendMessage({
-            channel: "ptk_popup2background_sca",
+            channel: "ptk_popup2background_sast",
             type: "init"
         }).then(response => {
             return response
@@ -33,7 +33,7 @@ export class ptk_controller_sca {
 
     async saveReport() {
         return browser.runtime.sendMessage({
-            channel: "ptk_popup2background_sca",
+            channel: "ptk_popup2background_sast",
             type: "save_report"
         }).then(response => {
             return response
@@ -42,7 +42,7 @@ export class ptk_controller_sca {
 
     async downloadScans() {
         return browser.runtime.sendMessage({
-            channel: "ptk_popup2background_sca",
+            channel: "ptk_popup2background_sast",
             type: "download_scans"
         }).then(response => {
             return response
@@ -52,7 +52,7 @@ export class ptk_controller_sca {
 
     async downloadScanById(scanId) {
         return browser.runtime.sendMessage({
-            channel: "ptk_popup2background_sca",
+            channel: "ptk_popup2background_sast",
             type: "download_scan_by_id",
             scanId: scanId
         }).then(response => {
@@ -62,7 +62,7 @@ export class ptk_controller_sca {
 
     async deleteScanById(scanId) {
         return browser.runtime.sendMessage({
-            channel: "ptk_popup2background_sca",
+            channel: "ptk_popup2background_sast",
             type: "delete_scan_by_id",
             scanId: scanId
         }).then(response => {
@@ -73,7 +73,7 @@ export class ptk_controller_sca {
 
     async reset() {
         return browser.runtime.sendMessage({
-            channel: "ptk_popup2background_sca",
+            channel: "ptk_popup2background_sast",
             type: "reset"
         }).then(response => {
             return response
@@ -82,7 +82,7 @@ export class ptk_controller_sca {
 
     async loadfile(file) {
         return browser.runtime.sendMessage({
-            channel: "ptk_popup2background_sca",
+            channel: "ptk_popup2background_sast",
             type: "loadfile",
             file: file
         }).then(response => {
@@ -92,7 +92,7 @@ export class ptk_controller_sca {
 
     async save(json) {
         return browser.runtime.sendMessage({
-            channel: "ptk_popup2background_sca",
+            channel: "ptk_popup2background_sast",
             type: "save",
             json: json
         }).then(response => {

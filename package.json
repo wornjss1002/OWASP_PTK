@@ -17,6 +17,8 @@
     "dependencies": {
         "@babel/core": "latest",
         "@babel/preset-env": "latest",
+        "acorn": "latest",
+        "acorn-walk": "latest",
         "archiver": "latest",
         "babel-loader": "latest",
         "clone-git-repo": "latest",
@@ -28,14 +30,15 @@
         "fomantic-ui": "latest",
         "fs-extra": "latest",
         "jose": "latest",
+        "jose-browser-runtime": "latest",
         "jquery": "latest",
         "mermaid": "latest",
         "request": "latest",
         "retire": "latest",
         "swagger-editor": "latest",
-        "wappalyzer": "^7.0.3",
+        "wappalyzer": "latest",
         "webextension-polyfill": "latest",
-        "webpack": "^5.99.8"
+        "webpack": "latest"
     },
     "devDependencies": {
         "@playwright/test": "latest",

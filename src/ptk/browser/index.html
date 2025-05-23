@@ -56,14 +56,16 @@
     <div id="mainMenuWrapper">
         <div class="ui segment clearing info_tab">
             <div id="dashboard_message_text" class="ui left floated header short_message_text"
-                style="width: calc(100vw - 240px);"></div>
-            <div class="ui right floated header buttons" style="width: 200px">
-                <button id="generate_report" class="ui black button right floated disabled"
-                    style="min-width: 150px;">Generate report</button>
+                style="width: calc(100vw - 325px);"></div>
+            <div class="ui right floated header buttons">
+                <button id="manage_scans" class="ui black button right floated disabled">Manage scans</button>
+            </div>
+            <div class="ui right floated header buttons">
+                <button id="generate_report" class="ui black button right floated disabled">Generate report</button>
             </div>
         </div>
     </div>
-    <div id="pagecontent"  style="padding-top:80px;">
+    <div id="pagecontent" style="padding-top:80px;">
         <div id="main" class="ui segment" style="padding: 4px 0px 40px 0px;margin: 0px;border:none">
 
             <div class="ui two column grid" style="height: 45vh;">
@@ -152,7 +154,7 @@
                 <div class="column" style="padding-left: 4px;">
                     <div class="ui fluid card" style="min-height: 245px; height: 40vh; overflow: hidden;">
                         <div class="content">
-             
+
                             <div class="ui small header"><i class="key icon"></i> Storage / Authentication</div>
                             <div id="storage"
                                 style="height: 300px; overflow: scroll; margin-top: 5px; scrollbar-width: none;">
@@ -166,12 +168,15 @@
                                     </thead>
                                 </table>
                             </div>
-                            <div id="jwt_btn" style="position: absolute;top: 0px;right: 0px;margin-top:0px; display: none"><h2 class="ui primary small button">
-                                <i class="icons">
-                                  <i class="eye icon"></i>
-                                </i>
-                                JWT
-                              </h2></div>
+                            <div id="jwt_btn"
+                                style="position: absolute;top: 0px;right: 0px;margin-top:0px; display: none">
+                                <h2 class="ui primary small button">
+                                    <i class="icons">
+                                        <i class="eye icon"></i>
+                                    </i>
+                                    JWT
+                                </h2>
+                            </div>
                         </div>
                         <div style="position:absolute; top:4px;right: 4px">
                             <div class="ui active centered inline inverted loader storage"></div>
@@ -245,6 +250,84 @@
                 </table>
             </div>
         </form>
+    </div>
+</div>
+
+
+<div id="run_scan_dlg" class="ui modal coupled second" style="display: none;">
+    <i class="close icon"></i>
+    <div class="header">Confirm scans execution</div>
+
+    <div class="content">
+        <div class="ui message" style="margin: -20px -20px 0px -20px;">
+            <p>Are you sure you want to run scan(s) against <span id="scan_host" style="font-weight: 600;"></span>?</p>
+        </div>
+
+
+        <form class="ui small form" id="scans_form" style="margin-top: 15px;">
+            <div class="ui  three column width grid">
+                <div class="row" style="border-bottom: solid 1px #cecece;" id="dast_scan_row">
+                    <div class="two wide column dast_scan_control">
+                        <div class="ui header">DAST</div>
+                    </div>
+                    <div class="two wide column dast_scan_control">
+                        <div class="ui toggle checkbox dast_scan">
+                            <input type="checkbox" name="dast_scan" checked="checked">
+                        </div>
+                    </div>
+                    <div class="ten wide column dast_scan_control">
+                        Domains to scan (comma separated):
+                        <textarea id="scan_domains" style="width: 100%; height: 30px;"></textarea>
+                    </div>
+                    <div class="two wide column"> <div class="ui mini button secondary dast_scan_stop" style="margin-top: 45px;">Stop</div></div>
+                </div>
+                <div class="row" style="border-bottom: solid 1px #cecece;" id="iast_scan_row">
+                    <div class="two wide column iast_scan_control">
+                        <div class="ui header">IAST</div>
+                    </div>
+                    <div class="two wide column iast_scan_control">
+                        <div class="ui toggle checkbox iast_scan">
+                            <input type="checkbox" name="iast_scan" checked="checked">
+                        </div>
+                    </div>
+                    <div class="ten wide column iast_scan_control">
+                    </div>
+                    <div class="two wide column"> <div class="ui mini button secondary iast_scan_stop" style="margin: -2px;">Stop</div></div>
+                </div>
+                <div class="row" style="border-bottom: solid 1px #cecece;" id="sast_scan_row">
+                    <div class="two wide column iast_scan_control">
+                        <div class="ui header">SAST</div>
+                    </div>
+                    <div class="two wide column iast_scan_control">
+                        <div class="ui toggle checkbox sast_scan">
+                            <input type="checkbox" name="sast_scan" checked="checked">
+                        </div>
+                    </div>
+                    <div class="ten wide column iast_scan_control">
+                    </div>
+                    <div class="two wide column"> <div class="ui mini button secondary sast_scan_stop" style="margin: -2px;">Stop</div></div>
+                </div>
+                <div class="row" id="sca_scan_row" >
+                    <div class="two wide column sca_scan_control">
+                        <div class="ui header">SCA</div>
+                    </div>
+                    <div class="two wide column sca_scan_control">
+                        <div class="ui toggle checkbox sca_scan">
+                            <input type="checkbox" name="sca_scan" checked="checked">
+                        </div>
+                    </div>
+                    <div class="ten wide column sca_scan_control">
+                    </div>
+                    <div class="two wide column"> <div class="ui mini button secondary sca_scan_stop" style="margin: -2px;">Stop</div></div>
+                </div>
+            </div>
+        </form>
+
+
+    </div>
+    <div class="actions">
+        <div class="ui cancel button">Cancel</div>
+        <div class="ui approve button secondary confirm_scan_run">Run scans</div>
     </div>
 </div>
 

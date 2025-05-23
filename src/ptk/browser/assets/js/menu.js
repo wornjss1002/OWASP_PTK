@@ -47,6 +47,7 @@ jQuery(function () {
                 <i class="home icon" style="position: relative;top: -10px;padding: 0px;margin: -5px;"></i></a>
                 <a class="item" href="rattacker.html" data-history="rattacker">DAST</a>
                 <a class="item" href="iast.html" data-history="iast">IAST</a>
+                <a class="item" href="sast.html" data-history="sast">SAST</a>
                 <a class="item" href="sca.html" data-history="sca">SCA</>
                 <a class="item" href="proxy.html" data-history="proxy">Proxy</a>
                 <a class="item" href="rbuilder.html" data-history="rbuilder">R-Builder</a>

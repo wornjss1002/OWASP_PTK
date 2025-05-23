@@ -19,6 +19,7 @@ import { ptk_portscanner } from "./ptk/background/portscanner.js"
 import { ptk_jwt } from "./ptk/background/jwt.js"
 
 import { ptk_iast } from "./ptk/background/iast.js"
+import { ptk_sast } from "./ptk/background/sast.js"
 
 
 const worker = self
@@ -57,6 +58,8 @@ export class ptk_app {
             this.jwt = new ptk_jwt()
 
             this.iast = new ptk_iast()
+
+            this.sast = new ptk_sast()
 
             this.recorder = new ptk_recorder(settings.recorder)
             this.recorder.addMessageListeners()

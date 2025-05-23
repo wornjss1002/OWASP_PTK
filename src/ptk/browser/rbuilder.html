@@ -57,7 +57,6 @@
             min-width: 450px !important;
             min-height: 300px;
         }
-
     </style>
 </head>
 
@@ -82,45 +81,53 @@
                             style="position: absolute;right: 0px;top: 3px;">
                             <i class="close icon"></i>
                         </button>
-                        <br />
-                        <div class="ui mini statistic left floated" style="margin-top: 5px;">
-                            <div class="value" id="attacks_count">
-                                0
+      
+
+                        <div style="padding-top: 15px;">
+                            <div class="ui mini statistic left floated" style="margin-top: 5px;">
+                                <div class="label">
+                                    Attacks
+                                </div>
+                                <div class="value" id="attacks_count">
+                                    0
+                                </div>
+
                             </div>
-                            <div class="label">
-                                Attacks
+                            <div class="ui mini statistic left floated" style="margin-top: 5px;">
+                                <div class="label">
+                                    Findings
+                                </div>
+                                <div class="value" id="vulns_count">
+                                    0
+                                </div>
+
                             </div>
-                        </div>
-                        <div class="ui mini statistic left floated" style="margin-top: 5px;">
-                            <div class="value" id="vulns_count">
-                                0
+                            <div class="ui mini statistic right floated" style="margin-top: 5px;">
+                                <div class="label"><i class="exclamation triangle yellow icon"></i>
+                                    Low
+                                </div>
+                                <div class="value" id="low_count">
+                                    0
+                                </div>
+
                             </div>
-                            <div class="label">
-                                Findings
+                            <div class="ui mini statistic right floated" style="margin-top: 5px;">
+                                <div class="label"><i class="exclamation triangle orange icon"></i>
+                                    Medium
+                                </div>
+                                <div class="value" id="medium_count">
+                                    0
+                                </div>
+
                             </div>
-                        </div>
-                        <div class="ui mini statistic right floated" style="margin-top: 5px;">
-                            <div class="value" id="low_count">
-                                0
-                            </div>
-                            <div class="label"><i class="exclamation triangle yellow icon"></i>
-                                Low
-                            </div>
-                        </div>
-                        <div class="ui mini statistic right floated" style="margin-top: 5px;">
-                            <div class="value" id="medium_count">
-                                0
-                            </div>
-                            <div class="label"><i class="exclamation triangle orange icon"></i>
-                                Medium
-                            </div>
-                        </div>
-                        <div class="ui mini statistic right floated" style="margin-top: 5px;">
-                            <div class="value" id="high_count">
-                                0
-                            </div>
-                            <div class="label"><i class="exclamation triangle red icon"></i>
-                                High
+                            <div class="ui mini statistic right floated" style="margin-top: 5px;">
+                                <div class="label"><i class="exclamation triangle red icon"></i>
+                                    High
+                                </div>
+                                <div class="value" id="high_count">
+                                    0
+                                </div>
+
                             </div>
                         </div>
                         <!-- <div class="ui mini statistic right floated" style="margin-top: 5px;">

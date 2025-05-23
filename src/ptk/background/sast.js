@@ -1,14 +1,15 @@
 /* Author: Denis Podgurskii */
 import { ptk_utils, ptk_logger, ptk_queue, ptk_storage, ptk_ruleManager } from "../background/utils.js"
 
+import { sastEngine } from './sast/sastEngine.js';
 
 const worker = self
 
-export class ptk_iast {
+export class ptk_sast {
 
     constructor(settings) {
         this.settings = settings
-        this.storageKey = "ptk_iast"
+        this.storageKey = "ptk_sast"
         this.resetScanResult()
 
         this.addMessageListeners()
@@ -25,14 +26,13 @@ export class ptk_iast {
     }
 
     resetScanResult() {
-        this.unregisterScript()
         this.isScanRunning = false
         this.scanResult = this.getScanResultSchema()
     }
 
     getScanResultSchema() {
         return {
-            type: "iast",
+            type: "sast",
             scanId: null,
             date: new Date().toISOString(),
             tabId: null,
@@ -96,34 +96,24 @@ export class ptk_iast {
 
     onMessage(message, sender, sendResponse) {
 
-        if (message.channel == "ptk_popup2background_iast") {
+        if (message.channel == "ptk_popup2background_sast") {
             if (this["msg_" + message.type]) {
                 return this["msg_" + message.type](message)
             }
             return Promise.resolve({ result: false })
         }
 
-        if (message.channel == "ptk_content2iast") {
-
-            if (message.type == 'check') {
-                console.log('check iast')
-                if (this.isScanRunning && this.scanResult.tabId == sender.tab.id)
-                    return Promise.resolve({ loadAgent: true })
-                else
-                    return Promise.resolve({ loadAgent: false })
-            }
-        }
-
-        if (message.channel == "ptk_content_iast2background_iast") {
-
-            if (message.type == 'finding_report') {
+        if (message.channel == "ptk_content_sast2background_sast") {
+            if (message.type == 'scripts_collected') {
                 if (this.isScanRunning && this.scanResult.tabId == sender.tab.id) {
-                    let i = this.scanResult.items.findIndex(a => (a.timestamp == message.finding.timestamp))
-                    if (i == -1) {
-                        this.scanResult.items.push(message.finding)
-                        this.updateScanResult()
-                        ptk_storage.setItem(this.storageKey, this.scanResult)
-                    }
+                    this.scanCode(message.scripts).then((findings) => {
+                        findings = this.removeDuplicates(findings)
+                        if (findings.length > 0) {
+                            this.scanResult.items.push(...findings)
+                            this.updateScanResult()
+                            ptk_storage.setItem(this.storageKey, this.scanResult)
+                        }
+                    })
                 }
             }
         }
@@ -147,6 +137,63 @@ export class ptk_iast {
         }
 
         ptk_storage.setItem(this.storageKey, this.scanResult)
+    }
+
+    removeDuplicates(issues) {
+
+        return issues.filter(i => {
+            let ind = this.scanResult.items.findIndex(e =>
+                e.ruleId == i.ruleId &&
+                e.file == i.file &&
+                e.start.line == i.start.line &&
+                e.start.column == i.start.column &&
+                e.end.line == i.end.line &&
+                e.end.column == i.end.column
+            )
+            const key = `${i.file}:${i.start}:${i.end}:${i.ruleId}`;
+            if (ind > -1) return false;
+            return true;
+        });
+
+    }
+
+    async scanCode(scripts) {
+        const engine = new sastEngine()
+        const issues = [];
+        for (const script of scripts) {
+            let code = script.code;
+            if (script.src) {
+                try {
+                    const res = await fetch(script.src);
+                    code = await res.text();
+                } catch {
+                    code = '';
+                }
+            }
+            const findings = engine.scan(code, { fileId: script.src || 'inline' });
+            findings.forEach(element => {
+                element.snippet = this.getCodeSnippet(code, element.start, element.end)
+            });
+            issues.push(...findings);
+        }
+        return issues
+    }
+
+    getCodeSnippet(code, start, end) {
+        let lines = code.split(/\r\n|\r|\n/)
+        let startLine = start.line
+        let endLine = end.line
+        let snippet = ''
+        if (lines.length > 3 && (startLine - 1) <= lines.length) {
+            snippet = "...\r\n"
+            snippet += (startLine - 2) >= 0 ? lines[startLine - 2] + "\r\n" : ''
+            snippet += (startLine - 1) >= 0 ? lines[startLine - 1] + "\r\n" : ''
+            snippet += startLine < lines.length ? lines[startLine] + "\r\n" : ''
+            snippet += "...\r\n"
+        } else {
+            snippet = code
+        }
+        return snippet
     }
 
     async msg_init(message) {
@@ -216,49 +263,14 @@ export class ptk_iast {
         this.scanResult.scanId = ptk_utils.UUID()
         this.scanResult.tabId = tabId
         this.scanResult.host = host
-        this.registerScript()
         this.addListeners()
     }
 
     stopBackroungScan() {
-        browser.tabs.sendMessage(this.scanResult.tabId, {
-            channel: "ptk_background_iast2content",
-            type: "clean iast result"
-        }).catch(() => { })
         this.isScanRunning = false
         this.scanResult.tabId = null
         ptk_storage.setItem(this.storageKey, this.scanResult)
-        this.unregisterScript()
         this.removeListeners()
-
-    }
-
-    registerScript() {
-        let file = !worker.isFirefox ? 'ptk/content/iast.js' : 'content/iast.js'
-        try {
-            browser.scripting.registerContentScripts([{
-                id: 'iast-agent',
-                js: [file],
-                matches: ['<all_urls>'],
-                runAt: 'document_start',
-                world: 'MAIN'
-            }]).then(s => {
-                console.log(s)
-            });
-        } catch (e) {
-            console.log('Failed to register IAST script:', e);
-        }
-    }
-
-    async unregisterScript() {
-        try {
-            await browser.scripting.unregisterContentScripts({
-                ids: ["iast-agent"],
-            });
-        } catch (err) {
-            //console.log(`failed to unregister content scripts: ${err}`);
-        }
-
     }
 
 }

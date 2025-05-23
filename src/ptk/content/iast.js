@@ -61,7 +61,7 @@ function collectTaintedSources() {
         } catch { };
     });
     if (window.name) add('window.name', window.name);
-    console.info('[IAST] Collected taints', raw);
+    //console.info('[IAST] Collected taints', raw);
     return raw;
 }
 window.__IAST_TAINTED__ = collectTaintedSources();
@@ -75,7 +75,7 @@ window.__IAST_TAINTED__ = collectTaintedSources();
         const hasAlnum = /[A-Za-z0-9]/.test(s);
         if (!hasAlnum && s !== '/') return;
         taints[key] = s;
-        console.info('[IAST] Updated source', key, s);
+        //console.info('[IAST] Updated source', key, s);
     };
     // Storage wrappers
     const proto = Storage.prototype;
@@ -203,7 +203,7 @@ function matchesTaint(input) {
 })();
 
 
-function reportFinding({ type, sink, matched, source, context = {} }) {
+function reportFinding({ type, sink, matched, source, severity, context = {} }) {
     const loc = window.location.href;
     let trace = '';
     try {
@@ -218,21 +218,22 @@ function reportFinding({ type, sink, matched, source, context = {} }) {
         context,
         location: loc,
         trace: trace,
+        severity: severity,
         timestamp: Date.now()
     };
 
     // 1) Console output
-    console.groupCollapsed(`%cIAST%c ${type}`,
-        'color:#d9534f;font-weight:bold', '');
-    console.log('• location:', loc);
-    console.log('• sink:    ', sink);
-    console.log('• source:  ', source);
-    console.log('• matched: ', matched);
-    // log any extra context fields
-    Object.entries(context).forEach(([k, v]) =>
-        console.log(`• ${k}:       `, v)
-    );
-    console.groupEnd();
+    // console.groupCollapsed(`%cIAST%c ${type}`,
+    //     'color:#d9534f;font-weight:bold', '');
+    // console.log('• location:', loc);
+    // console.log('• sink:    ', sink);
+    // console.log('• source:  ', source);
+    // console.log('• matched: ', matched);
+    // // log any extra context fields
+    // Object.entries(context).forEach(([k, v]) =>
+    //     console.log(`• ${k}:       `, v)
+    // );
+    // console.groupEnd();
 
 
     // 2) PostMessage to background (sanitized)
@@ -253,7 +254,7 @@ function reportFinding({ type, sink, matched, source, context = {} }) {
 
         window.postMessage(msg, '*');
     } catch (e) {
-        console.error('IAST reportFinding.postMessage failed:', e);
+        console.log('IAST reportFinding.postMessage failed:', e);
     }
 }
 
@@ -277,7 +278,7 @@ function scanInlineEvents(htmlFragment) {
                     sink: name,        // e.g. "onclick" or "onerror"
                     matched: m.raw,
                     source: m.source,
-                    severity: 'high',
+                    severity: 'medium',
                     context: {
                         element: el.outerHTML,
                         tag: el.tagName,
@@ -288,7 +289,7 @@ function scanInlineEvents(htmlFragment) {
             });
         });
     } catch (e) {
-        console.warn('[IAST] inline-event scan error', e);
+        console.log('[IAST] inline-event scan error', e);
     }
 }
 
@@ -305,7 +306,7 @@ function scanInlineEvents(htmlFragment) {
                 sink: 'eval',
                 matched: m.raw,
                 source: m.source,
-                severity: 'high',
+                severity: 'medium',
                 context: {
                     element: el,
                     value: code
@@ -329,7 +330,7 @@ function scanInlineEvents(htmlFragment) {
                     sink: 'Function.constructor',
                     matched: m.raw,
                     source: m.source,
-                    severity: 'high',
+                    severity: 'medium',
                     context: {
                         element: el,
                         value: args
@@ -347,6 +348,7 @@ function scanInlineEvents(htmlFragment) {
                     sink: 'Function.apply',
                     matched: m.raw,
                     source: m.source,
+                    severity: 'medium',
                     context: { args }
                 });
             }
@@ -380,7 +382,7 @@ function scanInlineEvents(htmlFragment) {
                     sink: 'document.write',
                     matched: m.raw,
                     source: m.source,
-                    severity: 'high',
+                    severity: 'medium',
                     context: { value: html, element: el }
                 });
                 scanInlineEvents(html, m);
@@ -403,7 +405,7 @@ function scanInlineEvents(htmlFragment) {
                         sink: 'document.write',
                         matched: m.raw,
                         source: m.source,
-                        severity: 'high',
+                        severity: 'medium',
                         context: { value: html, element: el }
                     });
                     seen.add(node);
@@ -419,7 +421,7 @@ function scanInlineEvents(htmlFragment) {
                             sink: 'document.write',
                             matched: m.raw,
                             source: m.source,
-                            severity: 'high',
+                            severity: 'medium',
                             context: { value: html, element: el }
                         });
                         seen.add(node);
@@ -457,7 +459,7 @@ function scanInlineEvents(htmlFragment) {
                         sink: prop,
                         matched: m.raw,
                         source: m.source,
-                        severity: 'high',
+                        severity: 'medium',
                         context: { value: htmlString, element: el }
                     });
                     scanInlineEvents(htmlString, m);
@@ -489,7 +491,7 @@ function scanInlineEvents(htmlFragment) {
                     sink: 'insertAdjacentHTML',
                     matched: m.raw,
                     source: m.source,
-                    severity: 'high',
+                    severity: 'medium',
                     context: { value: htmlString, element: el, position: pos }
                 });
                 scanInlineEvents(htmlString, m);
@@ -519,7 +521,7 @@ function scanInlineEvents(htmlFragment) {
                         sink: trigger,
                         matched: m.raw,
                         source: m.source,
-                        severity: 'high',
+                        severity: 'medium',
                         context: {
                             element: el,
                             value: txt,
@@ -543,6 +545,7 @@ function scanInlineEvents(htmlFragment) {
                             sink: trigger,
                             matched: m.raw,
                             source: m.source,
+                            severity: 'medium',
                             context: {
                                 element: n.outerHTML,
                                 nodeType: 'ELEMENT_NODE',

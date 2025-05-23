@@ -212,12 +212,12 @@ export class ptk_jwtHelper {
     static JWK = "JWK"
     constructor() {
         this.jwtRegex = /(ey[a-zA-Z0-9_=]+)\.(ey[a-zA-Z0-9_=]+)\.([a-zA-Z0-9_\-\+\/=]*)/
-        this.sessionRegex = '(?:[^"]*token\s?\s?){1}","?([A-Za-z0-9-_]+\.[A-Za-z0-9-_=]+\.?[A-Za-z0-9-_.+]*)"?'
-        this.headersRegex = '(?:"authorization"),"(?:.+\s?)?([A-Za-z0-9-_]+\.[A-Za-z0-9-_]+\.[A-Za-z0-9-_.]*)"'
-        this.storageRegex = '(?:"*token"\s?):\s?"?([A-Za-z0-9-_]+\.[A-Za-z0-9-_=]+\.?[A-Za-z0-9-_.+]*)"?'
+        this.sessionRegex = '(?:[^"]*token\s?\s?){1}","?(ey[A-Za-z0-9-_]+\.[A-Za-z0-9-_=]+\.?[A-Za-z0-9-_.+]*)"?'
+        this.headersRegex = '(?:"authorization"),"(?:.+\s?)?(ey[A-Za-z0-9-_]+\\.[A-Za-z0-9-_]+\\.[A-Za-z0-9-_.]*)"'
+        this.storageRegex = '(?:"*token"\s?):\s?"?(ey[A-Za-z0-9-_]+\.[A-Za-z0-9-_=]+\.?[A-Za-z0-9-_.+]*)"?'
 
-        this.cookiesRawRegex = /(?:[^"]*tokens?){1}\s?=\s?([A-Za-z0-9-_]+.[A-Za-z0-9-_=]+.?[A-Za-z0-9-_.+]*)"?/
-        this.headersRawRegex = /(?:authorization\:)(?:.+\s)?([A-Za-z0-9-_]+\.[A-Za-z0-9-_]+\.[A-Za-z0-9-_.]*)/
+        this.cookiesRawRegex = /(?:[^"]*tokens?){1}\s?=\s?(ey[A-Za-z0-9-_]+.[A-Za-z0-9-_=]+.?[A-Za-z0-9-_.+]*)"?/
+        this.headersRawRegex = /(?:authorization\:)(?:.+\s)?(ey[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+\.[A-Za-z0-9-_.]*)/
     }
 
     checkToken(token) {
@@ -264,17 +264,26 @@ export class ptk_jwtHelper {
 
     parseJwt(token) {
         let base64Url = token.split('.');
-        if (base64Url.length == 3) {
+        if (base64Url.length >= 2) {
             let header = decodeURIComponent(atob(base64Url[0].replace(/-/g, '+').replace(/_/g, '/')).split('').map(function (c) {
                 return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
             }).join(''))
-            let jsonPayload = decodeURIComponent(atob(base64Url[1].replace(/-/g, '+').replace(/_/g, '/')).split('').map(function (c) {
-                return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-            }).join(''));
-            return { "header": JSON.parse(header), "payload": JSON.parse(jsonPayload), "signature": base64Url[2] }
+            let jsonPayload = ''
+            try {
+                jsonPayload = decodeURIComponent(atob(base64Url[1].replace(/-/g, '+').replace(/_/g, '/')).split('').map(function (c) {
+                    return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+                }).join(''));
+            } catch (e) {
+                console.log(e)
+            }
+
+            if (base64Url.length == 3)
+                return { "header": JSON.parse(header), "payload": JSON.parse(jsonPayload), "signature": base64Url[2] }
+            else
+                return { "header": JSON.parse(header), "payload": JSON.parse(jsonPayload), "signature": "" }
         }
 
-        return JSON.parse(jsonPayload);
+        return null;
     }
 
     async generateConfusionAttacks(header, payload, secret) {

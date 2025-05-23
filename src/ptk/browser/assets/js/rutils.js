@@ -125,6 +125,25 @@ export function getMisc(info) {
     }
 }
 
+function getIconBySeverity(severity) {
+    let iconClass = ''
+    let order = 0
+    if (severity.toLowerCase() == 'high') {
+        iconClass = "red"
+        order = 0
+    }
+    if (severity.toLowerCase() == 'medium') {
+        iconClass = "orange"
+        order = 1
+    }
+    if (severity.toLowerCase() == 'low') {
+        iconClass = "yellow"
+        order = 2
+    }
+    let icon = `<i class="exclamation triangle ${iconClass} icon"></i>`
+    return { icon: icon, order }
+}
+
 export function bindAttack(info, original, index, requestId = -1) {
     let proof = ''
 
@@ -156,15 +175,15 @@ export function bindAttack(info, original, index, requestId = -1) {
 function getIASTContext(context) {
     let res = ''
     let keys = Object.keys(context)
-    if(keys.includes('element')){
-        res+= '<b>At element:</b> <i> ' + ptk_utils.escapeHtml(context['element'].substring(0, 200)) + "</i>"
-        if(keys.includes('position')){
-             res+= '<b>at position:</b> <i> ' + ptk_utils.escapeHtml(context['position']) + "</i>"
+    if (keys.includes('element')) {
+        res += '<b>At element:</b> <i> ' + ptk_utils.escapeHtml(context['element'].substring(0, 200)) + "</i>"
+        if (keys.includes('position')) {
+            res += '<b>at position:</b> <i> ' + ptk_utils.escapeHtml(context['position']) + "</i>"
         }
     }
-    if(keys.includes('value')){
+    if (keys.includes('value')) {
         let v = typeof context['value'] == 'string' ? context['value'] : context['value'][0]
-        res+= ' <b>with value:</b> <i>' + ptk_utils.escapeHtml(v) + "</i>"
+        res += ' <b>with value:</b> <i>' + ptk_utils.escapeHtml(v) + "</i>"
     }
     // Object.keys(context).forEach(item => {
     //     res += ptk_utils.escapeHtml(item) + ": " + ptk_utils.escapeHtml(context[item])
@@ -178,17 +197,18 @@ export function bindIASTAttack(info, requestId = -1) {
     // let misc = getMisc(info)
     // let icon = misc.icon, order = misc.order, attackClass = misc.attackClass
 
-    let icon = "", order = "", attackClass = "vuln  visible"
+    let { icon, order } = getIconBySeverity(info.severity)
 
     // if (info.proof)
     //     proof = `<div class="description"><p>Proof: <b><i name="proof">${ptk_utils.escapeHtml((info.proof))}</i></b></p></div>`
 
     let target = ptk_utils.escapeHtml(info.location)
     let context = getIASTContext(info.context)
+
     let item = `
       <div class="card" style="width:100%">
             <div class="content main">
-                <div class="header">${ptk_utils.escapeHtml(info.type)}</div>
+                <div class="header">${icon}${ptk_utils.escapeHtml(info.type)}</div>
                 <div class="description">
                     <p><b>Source:</b> <i style="background-color: lightgrey;">${ptk_utils.escapeHtml(info.source)}</i> 
                      to
@@ -196,7 +216,7 @@ export function bindIASTAttack(info, requestId = -1) {
                     <p>${context}</p>
                 </div>
             </div>
-            <div class="content stacktrace" style="display:none; overflow:scroll;width: 100%;height: 100%;">
+            <div class="content stacktrace" style="display:none; overflow:scroll;width: 100%;">
                 <i class="close icon stacktrace" style="position:absolute; right:20px"></i>
                 <pre style="font-size:  smaller">${ptk_utils.escapeHtml(info.trace)}</pre>
             </div>
@@ -207,6 +227,121 @@ export function bindIASTAttack(info, requestId = -1) {
     `
 
     return item
+}
+
+export function bindSASTAttack(info, requestId = -1) {
+    let proof = ''
+
+    // let misc = getMisc(info)
+    // let icon = misc.icon, order = misc.order, attackClass = misc.attackClass
+
+    let { icon, order } = getIconBySeverity(info.severity)
+    // if (info.proof)
+    //     proof = `<div class="description"><p>Proof: <b><i name="proof">${ptk_utils.escapeHtml((info.proof))}</i></b></p></div>`
+
+    let location = info.file == 'inline' ? ptk_utils.escapeHtml(info.file) : `<a href="${ptk_utils.escapeHtml(info.file)}" target="_blank">${ptk_utils.escapeHtml(info.file)}</a>`
+    //let context = getIASTContext(info.context)
+    let item = `
+      <div class="card" style="width:100%">
+            <div class="content main">
+                <div class="header">${icon} ${ptk_utils.escapeHtml(info.type)} (rule: ${ptk_utils.escapeHtml(info.ruleId)})</div>
+                <div class="description">
+                    <p><b>Location:</b> ${location}
+                    <p><b>Start at:</b> 
+
+                           line: ${ptk_utils.escapeHtml(info.start.line.toString())}
+                           lolumns: ${ptk_utils.escapeHtml(info.start.column.toString())}
+                   <b>End at:</b> 
+
+                            line: ${ptk_utils.escapeHtml(info.end.line.toString())}
+                            columns: ${ptk_utils.escapeHtml(info.end.column.toString())}
+                    </p>
+                    <p>${ptk_utils.escapeHtml(info.message)}</p>
+                </div>
+            </div>
+            <div class="content stacktrace no-webkit-scrollbar" style="display:none; overflow:scroll;width: 100%;">
+                <i class="close icon stacktrace" style="position:absolute; right:20px"></i>
+                <pre style="font-size:  smaller">${ptk_utils.escapeHtml(info.snippet)}</pre>
+            </div>
+            <div class="ui bottom attached button btn_stacktrace">Show code snippet</div>
+      </div>
+    `
+
+    return item
+}
+
+export function bindSCAAttack(info, requestId = -1) {
+    let proof = ''
+
+    // let misc = getMisc(info)
+    // let icon = misc.icon, order = misc.order, attackClass = misc.attackClass
+
+    let icon = "", order = "", attackClass = "vuln  visible"
+
+    let item = `
+      <div class="card" style="width:100%">
+            <div class="content main">
+                <div class="header">
+                    Component: ${ptk_utils.escapeHtml(info.component)} <br/> Version: ${ptk_utils.escapeHtml(info.version)}
+                </div>
+                <div class="meta">
+                    Found: ${ptk_utils.escapeHtml(info.file)}
+                </div>
+                
+             
+                ${prepareVulns(info.findings)}
+            </div>
+      </div>
+    `
+
+    return item
+}
+
+export function bindStats(stats, type) {
+    if (type == 'iast' || type == 'sast' || type == 'sca') {
+        $('#vulns_count').text(stats.findingsCount)
+        $('#high_count').text(stats.high)
+        $('#medium_count').text(stats.medium)
+        $('#low_count').text(stats.low)
+    }
+}
+
+function prepareVulns(vulns) {
+
+    let ret = '<div class="ui divided items">'
+    Object.values(vulns).forEach(item => {
+
+        let icon = getIconBySeverity(item.severity)
+        // ret += `<tr class="${(item.severity == 'high' ? 'ui red' : '')}">`
+        // ret += `<td>${(item.severity.charAt(0).toUpperCase() + item.severity.slice(1))}</td>`
+        // ret += `<td>${(item.identifiers.summary ? item.identifiers.summary : 'N/A')}</td>`
+        let str = ''
+        if (item.identifiers.CVE) {
+            Object.values(item.identifiers.CVE).forEach(link => {
+                str += `<a target="_blank" href="https://www.cvedetails.com/cve/${link}/">${link}</a><br>`
+            })
+        }
+        else {
+
+            Object.values(item.info).forEach(link => {
+                str += `<a target="_blank" href="${link}"><i class="external alternate icon"></i></a><br>`
+            })
+
+        }
+        // ret += "<td>" + str + "</td>"
+        // ret += "</tr>"
+
+        ret += `
+        <div class="item">
+            <div class="middle aligned content">
+            ${icon.icon} ${(item.identifiers.summary ? ptk_utils.escapeHtml(item.identifiers.summary) : 'N/A')}
+            <br/>
+            ${str}
+            </div>
+        </div>`
+    })
+    ret += '</div>'
+    return ret
 }
 
 let editor

@@ -56,6 +56,16 @@ fs.copyFile('./node_modules/fomantic-ui/dist/semantic.min.js', 'src/ptk/packages
 fs.copyFile('./node_modules/fomantic-ui/dist/semantic.min.css', 'src/ptk/packages/semantic-ui/semantic.min.css', (err) => {
     if (err) throw err;
 });
+fs.readFile('src/ptk/packages/semantic-ui/semantic.min.css', 'utf8', function (err, data) {
+    if (err) {
+        return console.log(err);
+    }
+    var result = data.replace(/-ms-high-contrast/g, 'forced-colors');
+
+    fs.writeFile('src/ptk/packages/semantic-ui/semantic.min.css', result, 'utf8', function (err) {
+        if (err) return console.log(err);
+    });
+});
 
 if (!fs.existsSync('src/ptk/packages/semantic-ui/themes/default')) {
     fs.mkdirSync('src/ptk/packages/semantic-ui/themes/default', { recursive: true });
@@ -124,7 +134,7 @@ fs.copySync('./node_modules/crypto-es/lib', 'src/ptk/packages/crypto-es', { recu
 if (!fs.existsSync('src/ptk/packages/jose')) {
     fs.mkdirSync('src/ptk/packages/jose', { recursive: true });
 }
-fs.copySync('./node_modules/jose/dist/browser', 'src/ptk/packages/jose/browser', { recursive: true })
+fs.copySync('./node_modules/jose-browser-runtime/dist/browser', 'src/ptk/packages/jose/browser', { recursive: true })
 
 
 //retire

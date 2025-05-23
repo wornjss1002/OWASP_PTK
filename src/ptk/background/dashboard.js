@@ -190,12 +190,46 @@ export class ptk_dashboard {
             return Promise.reject({ success: false, error: 'Error origin value' })
 
         if (message.channel == "ptk_popup2background_dashboard") {
-            console.log(message)
+            //console.log(message)
             if (this["msg_" + message.type]) {
                 return this["msg_" + message.type](message)
             }
             return Promise.resolve()
         }
+    }
+
+    async msg_run_bg_scan(message) {
+        
+        if (message.scans.dast) worker.ptk_app.rattacker.runBackroungScan(message.tabId, message.host, message.domains)
+        if (message.scans.iast) worker.ptk_app.iast.runBackroungScan(message.tabId, message.host)
+        if (message.scans.sast) worker.ptk_app.sast.runBackroungScan(message.tabId, message.host)
+        if (message.scans.sca) worker.ptk_app.sca.runBackroungScan(message.tabId, message.host)
+
+        let scans = {
+            dast: worker.ptk_app.rattacker.isScanRunning,
+            iast: worker.ptk_app.iast.isScanRunning,
+            sast: worker.ptk_app.sast.isScanRunning,
+            sca: worker.ptk_app.sca.isScanRunning
+        }
+
+        return Promise.resolve(Object.assign({}, self, worker.ptk_app.proxy.activeTab, { scans: scans }))
+    }
+
+    async msg_stop_bg_scan(message) {
+
+        if (message.scans.dast) worker.ptk_app.rattacker.stopBackroungScan()
+        if (message.scans.iast) worker.ptk_app.iast.stopBackroungScan()
+        if (message.scans.sast) worker.ptk_app.sast.stopBackroungScan()
+        if (message.scans.sca) worker.ptk_app.sca.stopBackroungScan()
+
+        let scans = {
+            dast: worker.ptk_app.rattacker.isScanRunning,
+            iast: worker.ptk_app.iast.isScanRunning,
+            sast: worker.ptk_app.sast.isScanRunning,
+            sca: worker.ptk_app.sca.isScanRunning
+        }
+    
+        return Promise.resolve(Object.assign({}, { scans: JSON.parse(JSON.stringify(scans)) }))
     }
 
     async msg_get(message) {
@@ -215,7 +249,7 @@ export class ptk_dashboard {
     async msg_init(message) {
         if (worker.ptk_app?.settings?.history?.route != 'index') {
             let link = ""
-            if (['session', 'sca', 'iast', 'proxy', 'rbuilder', 'rattacker', 'recording', 'decoder', 'swagger-editor', 'portscanner', 'jwt', 'xss','sql'].includes(worker.ptk_app.settings.history.route)) {
+            if (['session', 'sca', 'iast', 'sast', 'proxy', 'rbuilder', 'rattacker', 'recording', 'decoder', 'swagger-editor', 'portscanner', 'jwt', 'xss', 'sql'].includes(worker.ptk_app.settings.history.route)) {
                 link = worker.ptk_app.settings.history.route + ".html"
                 if (worker.ptk_app.settings.history.hash) {
                     link += "#" + worker.ptk_app.settings.history.hash
@@ -225,7 +259,12 @@ export class ptk_dashboard {
                 return Promise.resolve({ redirect: link, items: this.items })
         }
 
-
+        let scans = {
+            dast: worker.ptk_app.rattacker.isScanRunning,
+            iast: worker.ptk_app.iast.isScanRunning,
+            sast: worker.ptk_app.sast.isScanRunning,
+            sca: worker.ptk_app.sca.isScanRunning
+        }
         //this.Wappalyzer = Wappalyzer
 
         this.activeTab = worker.ptk_app.proxy.activeTab
@@ -261,11 +300,12 @@ export class ptk_dashboard {
                     self.tab.findings = HttpHeadersCheck.checkSecurityHeaders(tab)
                     self.initCookies(result.urls)
 
-                    return Promise.resolve(Object.assign({}, self, worker.ptk_app.proxy.activeTab, { findings: self.tab.findings }))
+                    return Promise.resolve(Object.assign({}, self, worker.ptk_app.proxy.activeTab, { findings: self.tab.findings }, { scans: scans }))
                 })
             }
         }
-        return Promise.resolve(Object.assign({}, worker.ptk_app.proxy.activeTab, { privacy: this.privacy }))
+
+        return Promise.resolve(Object.assign({}, worker.ptk_app.proxy.activeTab, { privacy: this.privacy }, { scans: scans }))
     }
 
     msg_analyze(message, tab) {

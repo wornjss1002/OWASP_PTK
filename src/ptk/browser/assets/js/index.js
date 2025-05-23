@@ -19,7 +19,7 @@ jQuery(function () {
     }
 
     tokens.onPush = function (obj) {
-        console.log(obj)
+        //console.log(obj)
         $('#jwt_btn').show()
     }
     $('#jwt_btn').on('click', function () {
@@ -81,6 +81,7 @@ jQuery(function () {
             //console.log (result)
             bindInfo()
             bindOWASP()
+
         })
     }, 150)
 
@@ -279,6 +280,103 @@ function merge(array1, array2) {
     return [...new Set([...array1, ...array2])]
 }
 
+
+
+function changeScanView(result){
+    if (result.scans.dast) {
+        $('.dast_scan_control').addClass('disable')
+        $('.dast_scan_stop').show()
+        $('.ui.checkbox.dast_scan').checkbox('uncheck')
+    } else {
+        $('.dast_scan_control').removeClass('disable')
+        $('.dast_scan_stop').hide()
+        $('.ui.checkbox.dast_scan').checkbox('check')
+    }
+    //IAST
+    if (result.scans.iast) {
+        $('.iast_scan_control').addClass('disable')
+        $('.iast_scan_stop').show()
+        $('.ui.checkbox.iast_scan').checkbox('uncheck')
+    } else {
+        $('.iast_scan_control').removeClass('disable')
+        $('.iast_scan_stop').hide()
+        $('.ui.checkbox.iast_scan').checkbox('check')
+    }
+    if (result.scans.sast) {
+        $('.sast_scan_control').addClass('disable')
+        $('.sast_scan_stop').show()
+        $('.ui.checkbox.sast_scan').checkbox('uncheck')
+    } else {
+        $('.sast_scan_control').removeClass('disable')
+        $('.sast_scan_stop').hide()
+        $('.ui.checkbox.sast_scan').checkbox('check')
+    }
+    if (result.scans.sca) {
+        $('.sca_scan_control').addClass('disable')
+        $('.sca_scan_stop').show()
+        $('.ui.checkbox.sca_scan').checkbox('uncheck')
+    } else {
+        $('.sca_scan_control').removeClass('disable')
+        $('.sca_scan_stop').hide()
+        $('.ui.checkbox.sca_scan').checkbox('check')
+    }
+}
+
+
+$(document).on("click", ".dast_scan_stop, .iast_scan_stop, .sast_scan_stop, .sca_scan_stop", function () {
+    let $form = $('#scans_form'), values = $form.form('get values')
+    let s = {
+        dast: $(this).hasClass('dast_scan_stop') ? true : false,
+        iast: $(this).hasClass('iast_scan_stop') ? true : false,
+        sast: $(this).hasClass('sast_scan_stop') ? true : false,
+        sca: $(this).hasClass('sca_scan_stop') ? true : false,
+    }
+    controller.stopBackroungScan(s).then(function (result) {
+        changeScanView(result)
+    }).catch(e=>{
+        console.log(e)
+    })
+})
+
+$(document).on("click", "#manage_scans", function () {
+    controller.init().then(function (result) {
+        if (!result?.activeTab?.url) {
+            $('#result_header').text("Error")
+            $('#result_message').text("Active tab not set. Reload required tab to activate tracking.")
+            $('#result_dialog').modal('show')
+            return false
+        }
+
+        let h = new URL(result.activeTab.url).host
+        $('#scan_host').text(h)
+        $('#scan_domains').text(h)
+        changeScanView(result)
+
+
+        $('#run_scan_dlg')
+            .modal({
+                allowMultiple: true,
+                onApprove: function () {
+                    let $form = $('#scans_form'), values = $form.form('get values')
+                    let s = {
+                        dast: values['dast_scan'] == 'on' ? true : false,
+                        iast: values['iast_scan'] == 'on' ? true : false,
+                        sast: values['sast_scan'] == 'on' ? true : false,
+                        sca: values['sca_scan'] == 'on' ? true : false,
+                    }
+                    controller.runBackroungScan(result.activeTab.tabId, h, $('#scan_domains').val(), s).then(function (result) {
+                        //changeView(result)
+                    })
+                }
+            })
+            .modal('show')
+    })
+
+    return false
+})
+
+
+
 /* Chrome runtime events handlers */
 browser.runtime.onMessage.addListener(function (message, sender, sendResponse) {
 
@@ -315,6 +413,7 @@ browser.runtime.onMessage.addListener(function (message, sender, sendResponse) {
             bindWAF()
             bindStorage()
             $('#generate_report').removeClass('disabled')
+            $('#manage_scans').removeClass('disabled')
 
         }
     }
