@@ -133,11 +133,13 @@ export class ptk_rattacker {
     }
 
     isLegalUrl(url) {
-        let u = new URL(url)
-        if (u.host.includes(this.scanResult?.host)) return true
-        if (this.scanResult?.domains.length > 0) {
-            for (let i = 0; i < this.scanResult?.domains.length; i++) {
-                if (u.host.includes(this.scanResult?.domains[i])) return true
+        if (url) {
+            let u = new URL(url)
+            if (u.host.includes(this.scanResult?.host)) return true
+            if (this.scanResult?.domains.length > 0) {
+                for (let i = 0; i < this.scanResult?.domains.length; i++) {
+                    if (u.host.includes(this.scanResult?.domains[i])) return true
+                }
             }
         }
         return false
@@ -356,7 +358,7 @@ export class ptk_rattacker {
 
     async msg_save(message) {
         let res = JSON.parse(message.json)
-        if ((!res.type || res.type == 'dast')  && Object.keys(res?.items).length > 0) {
+        if ((!res.type || res.type == 'dast') && Object.keys(res?.items).length > 0) {
             this.reset()
             ptk_storage.setItem(this.storageKey, JSON.parse(message.json))
             await this.init()
@@ -390,13 +392,10 @@ export class ptk_rattacker {
         this.scanResult.host = host
         this.scanResult.domains = this.parseDomains(domains)
         this.scan()
-        // this.iast = new ptk_iast()
-        // this.iast.start(tabId)
         this.addListeners()
     }
 
     stopBackroungScan() {
-        //if (this.iast) this.iast.stop(this.scanResult.tabId)
         this.isScanRunning = false
         this.scanResult.tabId = null
         this.scanResult.requestQueue.clear()
@@ -408,7 +407,6 @@ export class ptk_rattacker {
     addRequest(item) {
         let url = item.split('\n')[0]
         if (!this.scanResult.uniqueRequestQueue.has(url)) {
-            //console.log(url)
             this.scanResult.uniqueRequestQueue.enqueue(url)
             this.scanResult.requestQueue.enqueue(item)
         }
@@ -485,12 +483,15 @@ export class ptk_rattacker {
     }
 
     async scanRequest(raw) {
+        //console.log('scanRequest')
         let schema = ptk_request.parseRawRequest(raw)
         let original = await this.executeOriginal(schema)
         let result = { original: original, attacks: [], stats: { attacksCount: 0, vulnsCount: 0, high: 0, medium: 0, low: 0 } }
         if (!original) {
+
             return result
         }
+
 
         return this.runAttacks(original)
             .then((value) => {
@@ -510,6 +511,7 @@ export class ptk_rattacker {
     }
 
     async runAttacks(original) {
+        //console.log('run attack')
         let result = { attacks: [] }
         if (!original) {
             return result
@@ -519,7 +521,6 @@ export class ptk_rattacker {
         let modules = [...this.modules, ...this.pro_modules]
         for (let key in modules) {
             let module = modules[key]
-
             module.executed = []
 
             for (let attackIndex in module.attacks) {
