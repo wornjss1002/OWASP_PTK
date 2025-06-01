@@ -236,36 +236,84 @@ export function bindSASTAttack(info, requestId = -1) {
     // let icon = misc.icon, order = misc.order, attackClass = misc.attackClass
 
     let { icon, order } = getIconBySeverity(info.severity)
+    let item = ''
     // if (info.proof)
     //     proof = `<div class="description"><p>Proof: <b><i name="proof">${ptk_utils.escapeHtml((info.proof))}</i></b></p></div>`
-
-    let location = info.file == 'inline' ? ptk_utils.escapeHtml(info.file) : `<a href="${ptk_utils.escapeHtml(info.file)}" target="_blank">${ptk_utils.escapeHtml(info.file)}</a>`
-    //let context = getIASTContext(info.context)
-    let item = `
-      <div class="card" style="width:100%">
-            <div class="content main">
-                <div class="header">${icon} ${ptk_utils.escapeHtml(info.type)} (rule: ${ptk_utils.escapeHtml(info.ruleId)})</div>
-                <div class="description">
-                    <p><b>Location:</b> ${location}
-                    <p><b>Start at:</b> 
-
-                           line: ${ptk_utils.escapeHtml(info.start.line.toString())}
-                           lolumns: ${ptk_utils.escapeHtml(info.start.column.toString())}
-                   <b>End at:</b> 
-
-                            line: ${ptk_utils.escapeHtml(info.end.line.toString())}
-                            columns: ${ptk_utils.escapeHtml(info.end.column.toString())}
-                    </p>
-                    <p>${ptk_utils.escapeHtml(info.message)}</p>
+    if (info.file) {
+        let location = info.file == 'inline' ? ptk_utils.escapeHtml(info.file) : `<a href="${ptk_utils.escapeHtml(info.file)}" target="_blank">${ptk_utils.escapeHtml(info.file)}</a>`
+        //let context = getIASTContext(info.context)
+        item = `
+                <div class="card" style="width:100%">
+                        <div class="content main">
+                            <div class="header">${icon} ${ptk_utils.escapeHtml(info.type)} (rule: ${ptk_utils.escapeHtml(info.ruleId)})</div>
+                            <p><b>Description:</b> ${ptk_utils.escapeHtml(info.description)}</p>
+                            <div class="description">
+                                <p><b>Location:</b> ${location}</p>
+                                <p><b>Start at:</b> 
+                                    line: ${ptk_utils.escapeHtml(info.location.start.line.toString())}
+                                    columns: ${ptk_utils.escapeHtml(info.location.start.column.toString())}
+                                    <b>End at:</b> 
+                                    line: ${ptk_utils.escapeHtml(info.location.end.line.toString())}
+                                    columns: ${ptk_utils.escapeHtml(info.location.end.column.toString())}
+                                </p>
+                                
+                            </div>
+                        </div>
+                        <div class="content stacktrace no-webkit-scrollbar" style="display:none; overflow:scroll;width: 100%;">
+                            <i class="close icon stacktrace" style="position:absolute; right:20px"></i>
+                            <pre style="font-size:  smaller">${ptk_utils.escapeHtml(info.codeSnippet)}</pre>
+                        </div>
+                        <div class="ui bottom attached button btn_stacktrace">Show code snippet</div>
                 </div>
-            </div>
-            <div class="content stacktrace no-webkit-scrollbar" style="display:none; overflow:scroll;width: 100%;">
-                <i class="close icon stacktrace" style="position:absolute; right:20px"></i>
-                <pre style="font-size:  smaller">${ptk_utils.escapeHtml(info.snippet)}</pre>
-            </div>
-            <div class="ui bottom attached button btn_stacktrace">Show code snippet</div>
-      </div>
-    `
+                `
+    } else if (info.sinkFile && info.sourceFile) {
+        let sourceLocation = info.sourceFile.startsWith('inline') ? ptk_utils.escapeHtml(info.sourceFile) : `<a href="${ptk_utils.escapeHtml(info.sourceFile)}" target="_blank">${ptk_utils.escapeHtml(info.sourceFile)}</a>`
+        let sinkLocation = info.sinkFile.startsWith('inline') ? ptk_utils.escapeHtml(info.sinkFile) : `<a href="${ptk_utils.escapeHtml(info.sinkFile)}" target="_blank">${ptk_utils.escapeHtml(info.sinkFile)}</a>`
+        item = `
+                <div class="card" style="width:100%">
+                        <div class="content main">
+                            <div class="header">${icon} ${ptk_utils.escapeHtml(info.type)} (rule: ${ptk_utils.escapeHtml(info.ruleId)})</div>
+                            <p><b>Description:</b> ${ptk_utils.escapeHtml(info.description)}</p>
+                            <div class="description">
+                                <p><b>Source:</b> ${sourceLocation} </p>
+                                <div style="padding-left:10px">
+                                    <p>
+                                        <b>Code: <i>${ptk_utils.escapeHtml(info.sourceSnippet)}</i></b>
+                                    </p>
+                                    <p><b>Start at:</b> 
+                                        line: ${ptk_utils.escapeHtml(info.sourceLoc.start.line.toString())}
+                                        columns: ${ptk_utils.escapeHtml(info.sourceLoc.start.column.toString())}
+                                    <b>End at:</b> 
+                                        line: ${ptk_utils.escapeHtml(info.sourceLoc.end.line.toString())}
+                                        columns: ${ptk_utils.escapeHtml(info.sourceLoc.end.column.toString())}
+                                    </p>
+                                </div>
+
+                                <p></p>
+
+                                <p><b>Sink:</b> ${sinkLocation} </p>
+                                <div style="padding-left:10px">
+                                    <p><b>Code: <i>${ptk_utils.escapeHtml(info.sinkSnippet)}</i></b> </p>
+                                    <p><b>Start at:</b> 
+                                        line: ${ptk_utils.escapeHtml(info.sinkLoc.start.line.toString())}
+                                        columns: ${ptk_utils.escapeHtml(info.sinkLoc.start.column.toString())}
+                                    <b>End at:</b> 
+                                        line: ${ptk_utils.escapeHtml(info.sinkLoc.end.line.toString())}
+                                        columns: ${ptk_utils.escapeHtml(info.sinkLoc.end.column.toString())}
+                                    </p>
+                                </div>
+
+                                
+                            </div>
+                        </div>
+                        <div class="content stacktrace no-webkit-scrollbar" style="display:none; overflow:scroll;width: 100%;">
+                            <i class="close icon stacktrace" style="position:absolute; right:20px"></i>
+                            <pre style="font-size:  smaller">${ptk_utils.escapeHtml(info.codeSnippet)}</pre>
+                        </div>
+                        <div class="ui bottom attached button btn_stacktrace">Show code snippet</div>
+                </div>
+                `
+    }
 
     return item
 }

@@ -2,6 +2,8 @@
 import { ptk_utils, ptk_logger, ptk_queue, ptk_storage, ptk_ruleManager } from "../background/utils.js"
 
 import { sastEngine } from './sast/sastEngine.js';
+import * as acorn from './sast/acorn/acorn.mjs';
+import { simple as walkSimple } from './sast/acorn/walk.mjs';
 
 const worker = self
 
@@ -106,7 +108,7 @@ export class ptk_sast {
         if (message.channel == "ptk_content_sast2background_sast") {
             if (message.type == 'scripts_collected') {
                 if (this.isScanRunning && this.scanResult.tabId == sender.tab.id) {
-                    this.scanCode(message.scripts).then((findings) => {
+                    this.scanCode(message.scripts, message.html).then((findings) => {
                         findings = this.removeDuplicates(findings)
                         if (findings.length > 0) {
                             this.scanResult.items.push(...findings)
@@ -157,43 +159,37 @@ export class ptk_sast {
 
     }
 
-    async scanCode(scripts) {
-        const engine = new sastEngine()
-        const issues = [];
-        for (const script of scripts) {
-            let code = script.code;
-            if (script.src) {
-                try {
-                    const res = await fetch(script.src);
-                    code = await res.text();
-                } catch {
-                    code = '';
-                }
-            }
-            const findings = engine.scan(code, { fileId: script.src || 'inline' });
-            findings.forEach(element => {
-                element.snippet = this.getCodeSnippet(code, element.start, element.end)
-            });
-            issues.push(...findings);
-        }
-        return issues
-    }
+    // async scanCode(scripts) {
+    //     const engine = new sastEngine()
+    //     const issues = [];
+    //     for (const script of scripts) {
+    //         let code = script.code;
+    //         if (script.src) {
+    //             try {
+    //                 const res = await fetch(script.src);
+    //                 code = await res.text();
+    //             } catch {
+    //                 code = '';
+    //             }
+    //         }
+    //         const findings = engine.scan(code, { fileId: script.src || 'inline' });
+    //         findings.forEach(element => {
+    //             if(element.location)
+    //                 element.snippet = this.getCodeSnippet(code, element.location)
+    //             else if(element.source && element.sink){
+    //                 element.source = this.getCodeSnippet(code, element.source)
+    //                 element.sink = this.getCodeSnippet(code, element.sink)
+    //             }
+    //         });
+    //         issues.push(...findings);
+    //     }
+    //     return issues
+    // }
 
-    getCodeSnippet(code, start, end) {
-        let lines = code.split(/\r\n|\r|\n/)
-        let startLine = start.line
-        let endLine = end.line
-        let snippet = ''
-        if (lines.length > 3 && (startLine - 1) <= lines.length) {
-            snippet = "...\r\n"
-            snippet += (startLine - 2) >= 0 ? lines[startLine - 2] + "\r\n" : ''
-            snippet += (startLine - 1) >= 0 ? lines[startLine - 1] + "\r\n" : ''
-            snippet += startLine < lines.length ? lines[startLine] + "\r\n" : ''
-            snippet += "...\r\n"
-        } else {
-            snippet = code
-        }
-        return snippet
+
+    async scanCode(scripts, html) {
+        const engine = new sastEngine(this.scanResult.policy);
+        return await engine.scanCode(scripts, html)
     }
 
     async msg_init(message) {
@@ -247,7 +243,7 @@ export class ptk_sast {
     }
 
     msg_run_bg_scan(message) {
-        this.runBackroungScan(message.tabId, message.host)
+        this.runBackroungScan(message.tabId, message.host, message.policy)
         return Promise.resolve({ isScanRunning: this.isScanRunning, scanResult: JSON.parse(JSON.stringify(this.scanResult)) })
     }
 
@@ -256,13 +252,14 @@ export class ptk_sast {
         return Promise.resolve({ scanResult: JSON.parse(JSON.stringify(this.scanResult)) })
     }
 
-    runBackroungScan(tabId, host) {
+    runBackroungScan(tabId, host, policy) {
         this.reset()
         this.isScanRunning = true
         this.scanningRequest = false
         this.scanResult.scanId = ptk_utils.UUID()
         this.scanResult.tabId = tabId
         this.scanResult.host = host
+        this.scanResult.policy = policy
         this.addListeners()
     }
 

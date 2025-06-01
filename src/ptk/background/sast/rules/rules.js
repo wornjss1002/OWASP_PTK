@@ -3,15 +3,20 @@ const xssRule = {
     description: 'Disallow innerHTML assignments to prevent XSS.',
     severity: 'low',
     check(ast, meta, walk) {
+        const self = this
         const issues = [];
         walk(ast, {
             AssignmentExpression(node) {
                 if (node.left.type === 'MemberExpression' && node.left.property.name === 'innerHTML') {
-                    issues.push({ 
-                        file: meta.fileId, 
-                        type: node.type, 
-                        start: node.loc.start, 
-                        end: node.loc.end 
+                    issues.push({
+                        ruleId: self.id,
+                        description: self.description,
+                        severity: self.severity,
+                        file: node.sourceFile || meta.fileId,
+                        type: node.type,
+                        start: node.loc.start,
+                        end: node.loc.end,
+                        location: node.loc
                     });
                 }
             }
@@ -26,15 +31,20 @@ const noEvalRule = {
     description: 'Disallow use of eval() to prevent remote code execution.',
     severity: 'low',
     check(ast, meta, walk) {
+        const self = this
         const issues = [];
         walk(ast, {
             CallExpression(node) {
                 if (node.callee.type === 'Identifier' && node.callee.name === 'eval') {
-                    issues.push({ 
-                        file: meta.fileId, 
-                        type: node.type, 
-                        start: node.loc.start, 
-                        end: node.loc.end 
+                    issues.push({
+                        ruleId: self.id,
+                        description: self.description,
+                        severity: self.severity,
+                        file: node.sourceFile || meta.fileId,
+                        type: node.type,
+                        start: node.loc.start,
+                        end: node.loc.end,
+                        location: node.loc
                     });
                 }
             }
@@ -49,6 +59,7 @@ const documentWriteRule = {
     description: 'Disallow use of document.write() to prevent XSS.',
     severity: 'low',
     check(ast, meta, walk) {
+        const self = this
         const issues = [];
         walk(ast, {
             CallExpression(node) {
@@ -57,11 +68,15 @@ const documentWriteRule = {
                     node.callee.object.name === 'document' &&
                     node.callee.property.name === 'write'
                 ) {
-                    issues.push({ 
-                        file: meta.fileId, 
-                        type: node.type, 
-                        start: node.loc.start, 
-                        end: node.loc.end 
+                    issues.push({
+                        ruleId: self.id,
+                        description: self.description,
+                        severity: self.severity,
+                        file: node.sourceFile || meta.fileId,
+                        type: node.type,
+                        start: node.loc.start,
+                        end: node.loc.end,
+                        location: node.loc
                     });
                 }
             }
@@ -76,6 +91,7 @@ const insertAdjacentHTMLRule = {
     description: 'Disallow use of insertAdjacentHTML() to prevent XSS.',
     severity: 'low',
     check(ast, meta, walk) {
+        const self = this
         const issues = [];
         walk(ast, {
             CallExpression(node) {
@@ -84,11 +100,15 @@ const insertAdjacentHTMLRule = {
                     node.callee.property.name &&
                     node.callee.property.name.toLowerCase() === 'insertadjacenthtml'
                 ) {
-                    issues.push({ 
-                        file: meta.fileId, 
-                        type: node.type, 
-                        start: node.loc.start, 
-                        end: node.loc.end 
+                    issues.push({
+                        ruleId: self.id,
+                        description: self.description,
+                        severity: self.severity,
+                        file: node.sourceFile || meta.fileId,
+                        type: node.type,
+                        start: node.loc.start,
+                        end: node.loc.end,
+                        location: node.loc
                     });
                 }
             }
@@ -103,6 +123,7 @@ const appendChildRule = {
     description: 'Disallow use of appendChild() to prevent DOM-based injection.',
     severity: 'low',
     check(ast, meta, walk) {
+        const self = this
         const issues = [];
         walk(ast, {
             CallExpression(node) {
@@ -111,11 +132,15 @@ const appendChildRule = {
                     node.callee.property.name &&
                     node.callee.property.name === 'appendChild'
                 ) {
-                    issues.push({ 
-                        file: meta.fileId, 
-                        type: node.type, 
-                        start: node.loc.start, 
-                        end: node.loc.end 
+                    issues.push({
+                        ruleId: self.id,
+                        description: self.description,
+                        severity: self.severity,
+                        file: node.sourceFile || meta.fileId,
+                        type: node.type,
+                        start: node.loc.start,
+                        end: node.loc.end,
+                        location: node.loc
                     });
                 }
             }
@@ -130,15 +155,20 @@ const functionConstructorRule = {
     description: 'Disallow use of the Function constructor to prevent dynamic code execution.',
     severity: 'low',
     check(ast, meta, walk) {
+        const self = this
         const issues = [];
         walk(ast, {
             NewExpression(node) {
                 if (node.callee.type === 'Identifier' && node.callee.name === 'Function') {
-                    issues.push({ 
-                        file: meta.fileId, 
-                        type: node.type, 
-                        start: node.loc.start, 
-                        end: node.loc.end 
+                    issues.push({
+                        ruleId: self.id,
+                        description: self.description,
+                        severity: self.severity,
+                        file: node.sourceFile || meta.fileId,
+                        type: node.type,
+                        start: node.loc.start,
+                        end: node.loc.end,
+                        location: node.loc
                     });
                 }
             }
@@ -153,6 +183,7 @@ const openRedirectRule = {
     description: 'Disallow window.open() calls to prevent open redirects.',
     severity: 'low',
     check(ast, meta, walk) {
+        const self = this
         const issues = [];
         walk(ast, {
             CallExpression(node) {
@@ -161,11 +192,15 @@ const openRedirectRule = {
                     ((node.callee.object.name === 'window' && node.callee.property.name === 'open') ||
                         (node.callee.object.name === 'location' && node.callee.property.name === 'assign'))
                 ) {
-                    issues.push({ 
-                        file: meta.fileId, 
-                        type: node.type, 
-                        start: node.loc.start, 
-                        end: node.loc.end 
+                    issues.push({
+                        ruleId: self.id,
+                        description: self.description,
+                        severity: self.severity,
+                        file: node.sourceFile || meta.fileId,
+                        type: node.type,
+                        start: node.loc.start,
+                        end: node.loc.end,
+                        location: node.loc
                     });
                 }
             }

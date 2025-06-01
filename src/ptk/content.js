@@ -22,7 +22,8 @@ setInterval(function () {
         browser.runtime.sendMessage({
             channel: "ptk_content_sast2background_sast",
             type: "scripts_collected",
-            scripts: scripts
+            scripts: scripts,
+            html: document.documentElement.innerHTML
         });
 
     });

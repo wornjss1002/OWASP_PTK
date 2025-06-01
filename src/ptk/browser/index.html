@@ -279,7 +279,9 @@
                         Domains to scan (comma separated):
                         <textarea id="scan_domains" style="width: 100%; height: 30px;"></textarea>
                     </div>
-                    <div class="two wide column"> <div class="ui mini button secondary dast_scan_stop" style="margin-top: 45px;">Stop</div></div>
+                    <div class="two wide column">
+                        <div class="ui mini button secondary dast_scan_stop" style="margin-top: 45px;">Stop</div>
+                    </div>
                 </div>
                 <div class="row" style="border-bottom: solid 1px #cecece;" id="iast_scan_row">
                     <div class="two wide column iast_scan_control">
@@ -292,22 +294,35 @@
                     </div>
                     <div class="ten wide column iast_scan_control">
                     </div>
-                    <div class="two wide column"> <div class="ui mini button secondary iast_scan_stop" style="margin: -2px;">Stop</div></div>
+                    <div class="two wide column">
+                        <div class="ui mini button secondary iast_scan_stop" style="margin: -2px;">Stop</div>
+                    </div>
                 </div>
                 <div class="row" style="border-bottom: solid 1px #cecece;" id="sast_scan_row">
-                    <div class="two wide column iast_scan_control">
+                    <div class="two wide column sast_scan_control">
                         <div class="ui header">SAST</div>
                     </div>
-                    <div class="two wide column iast_scan_control">
+                    <div class="two wide column sast_scan_control">
                         <div class="ui toggle checkbox sast_scan">
                             <input type="checkbox" name="sast_scan" checked="checked">
                         </div>
                     </div>
-                    <div class="ten wide column iast_scan_control">
+                    <div class="ten wide column sast_scan_control">
+                        <div class="ui mini fluid selection dropdown">
+                            <input type="hidden" name="policy" id="policy">
+                            <i class="dropdown icon"></i>
+                            <div class="default text">Scan policy</div>
+                            <div class="menu">
+                                <div class="item" data-value="0">All rules</div>
+                                <div class="item" data-value="1">Taint flow rules</div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="two wide column"> <div class="ui mini button secondary sast_scan_stop" style="margin: -2px;">Stop</div></div>
+                    <div class="two wide column">
+                        <div class="ui mini button secondary sast_scan_stop" style="margin: -2px;">Stop</div>
+                    </div>
                 </div>
-                <div class="row" id="sca_scan_row" >
+                <div class="row" id="sca_scan_row">
                     <div class="two wide column sca_scan_control">
                         <div class="ui header">SCA</div>
                     </div>
@@ -318,7 +333,9 @@
                     </div>
                     <div class="ten wide column sca_scan_control">
                     </div>
-                    <div class="two wide column"> <div class="ui mini button secondary sca_scan_stop" style="margin: -2px;">Stop</div></div>
+                    <div class="two wide column">
+                        <div class="ui mini button secondary sca_scan_stop" style="margin: -2px;">Stop</div>
+                    </div>
                 </div>
             </div>
         </form>
