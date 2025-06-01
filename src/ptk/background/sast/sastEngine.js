@@ -6,7 +6,7 @@ import { Parser } from './acorn/acorn.mjs';
 import { full, ancestor, base } from './acorn/walk.mjs';
 
 
-import * as rules from './rules/rules–.js';
+import * as rules from './rules/rules.js';
 import * as taint from './rules/taint.js';
 
 export class sastEngine {
