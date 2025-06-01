@@ -1,12 +1,13 @@
 /* Author: Denis Podgurskii */
 export class ptk_controller_sast {
 
-    async runBackroungScan(tabId, host){
+    async runBackroungScan(tabId, host, policy){
         return browser.runtime.sendMessage({
             channel: "ptk_popup2background_sast",
             type: "run_bg_scan",
             tabId: tabId,
-            host: host
+            host: host,
+            policy: policy
         }).then(response => {
             return response
         }).catch(e => e)

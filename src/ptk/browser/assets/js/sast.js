@@ -68,7 +68,8 @@ jQuery(function () {
                 .modal({
                     allowMultiple: true,
                     onApprove: function () {
-                        controller.runBackroungScan(result.activeTab.tabId, h).then(function (result) {
+                        let policy = $('#policy').val()
+                        controller.runBackroungScan(result.activeTab.tabId, h, policy).then(function (result) {
                             $("#request_info").html("")
                             $("#attacks_info").html("")
                             $(document).trigger("bind_stats", result.scanResult)

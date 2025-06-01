@@ -37,7 +37,8 @@ export class ptk_controller_rbuilder {
             channel: "ptk_popup2background_request",
             type: "send_request",
             schema: schema,
-            formId: formId
+            formId: formId,
+            useListeners: true
         }).then(response => {
             return response
         })

@@ -202,7 +202,7 @@ export class ptk_dashboard {
         
         if (message.scans.dast) worker.ptk_app.rattacker.runBackroungScan(message.tabId, message.host, message.domains)
         if (message.scans.iast) worker.ptk_app.iast.runBackroungScan(message.tabId, message.host)
-        if (message.scans.sast) worker.ptk_app.sast.runBackroungScan(message.tabId, message.host)
+        if (message.scans.sast) worker.ptk_app.sast.runBackroungScan(message.tabId, message.host, message.policy)
         if (message.scans.sca) worker.ptk_app.sca.runBackroungScan(message.tabId, message.host)
 
         let scans = {

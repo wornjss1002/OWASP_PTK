@@ -271,9 +271,21 @@
 
         <div class="content">
             <div class="ui message" style="margin: -20px -20px 0px -20px;">
-                <p>Are you sure you want to run SAST scan against <span id="scan_host" style="font-weight: 600;"></span>?</p>
+                <p>Are you sure you want to run SAST scan against <span id="scan_host"
+                        style="font-weight: 600;"></span>?</p>
+            </div>
+
+        </div>
+        <div class="ui fluid selection dropdown">
+            <input type="hidden" name="policy" id="policy">
+            <i class="dropdown icon"></i>
+            <div class="default text">Scan policy</div>
+            <div class="menu">
+                <div class="item" data-value="0">All rules</div>
+                <div class="item" data-value="1">Taint flow rules</div>
             </div>
         </div>
+        <br/>
         <div class="actions">
             <div class="ui cancel button">Cancel</div>
             <div class="ui approve button secondary confirm_scan_run">Run scan</div>

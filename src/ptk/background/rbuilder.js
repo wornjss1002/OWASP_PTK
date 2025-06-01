@@ -120,6 +120,7 @@ export class ptk_request_manager {
     async msg_send_request(message) {
         let self = this
         let request = new ptk_request()
+        if(message.useListeners) request.useListeners = true
         return request.sendRequest(message.schema).then(function (response) {
             if (message.formId) {
                 let sort = self.storage[message.formId].sort
@@ -168,6 +169,7 @@ export class ptk_request {
     }
 
     async init() {
+        this.useListeners = false
         this.trackingRequest = null
     }
 
@@ -358,7 +360,7 @@ export class ptk_request {
     }
 
     async sendRequest(schema) {
-        this.addListeners()
+        if (this.useListeners) this.addListeners()
         // ptk_ruleManager.getDynamicRules()
         // ptk_ruleManager.getSessionRules()
         let ruleId = null
@@ -446,7 +448,7 @@ export class ptk_request {
         }).finally(() => {
             clearTimeout(timeoutId)
             self.trackingRequest = null
-            self.removeListeners()
+            if (this.useListeners) self.removeListeners()
             if (ruleId) {
                 ptk_ruleManager.removeSessionRule(ruleId)
             }

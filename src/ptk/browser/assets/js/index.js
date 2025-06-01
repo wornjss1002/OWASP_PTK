@@ -282,7 +282,7 @@ function merge(array1, array2) {
 
 
 
-function changeScanView(result){
+function changeScanView(result) {
     if (result.scans.dast) {
         $('.dast_scan_control').addClass('disable')
         $('.dast_scan_stop').show()
@@ -333,7 +333,7 @@ $(document).on("click", ".dast_scan_stop, .iast_scan_stop, .sast_scan_stop, .sca
     }
     controller.stopBackroungScan(s).then(function (result) {
         changeScanView(result)
-    }).catch(e=>{
+    }).catch(e => {
         console.log(e)
     })
 })
@@ -364,7 +364,8 @@ $(document).on("click", "#manage_scans", function () {
                         sast: values['sast_scan'] == 'on' ? true : false,
                         sca: values['sca_scan'] == 'on' ? true : false,
                     }
-                    controller.runBackroungScan(result.activeTab.tabId, h, $('#scan_domains').val(), s).then(function (result) {
+                    let sast_policy = $('#policy').val()
+                    controller.runBackroungScan(result.activeTab.tabId, h, $('#scan_domains').val(), s, sast_policy).then(function (result) {
                         //changeView(result)
                     })
                 }
