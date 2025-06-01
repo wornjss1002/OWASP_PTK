@@ -6,7 +6,7 @@ import { Parser } from './acorn/acorn.mjs';
 import { full, ancestor, base } from './acorn/walk.mjs';
 
 
-import * as rules from './rules/rules.js';
+import * as rules from './rules/rules–.js';
 import * as taint from './rules/taint.js';
 
 export class sastEngine {
@@ -93,7 +93,7 @@ export class sastEngine {
     }
 
 
-    async scanCode(scripts, html) {
+    async scanCode(scripts, html = '') {
         // ----------------------------------------------------------
         // A) We want to keep codeByFile[fileId] = raw JavaScript text
         //    so that, later, we can extract the snippet by location.
@@ -105,8 +105,7 @@ export class sastEngine {
         // Step 0: If you already have the full HTML text in
         //         `this.rawHtml`, extract all inline-event snippets.
         // ----------------------------------------------------------
-        const htmlText = html;
-        const inlineSnippets = this.extractInlineHandlers(htmlText);
+        const inlineSnippets = this.extractInlineHandlers(html);
 
         // (0a) Parse each inline‐onclick snippet and tag it as "inline‐onclick[#i]"
         for (let i = 0; i < inlineSnippets.length; i++) {
@@ -302,102 +301,4 @@ export class sastEngine {
         return snippet
     }
 
-
-
-    /**
-     * Scan code string and return an array of issues
-     */
-
-    // scanAST(ast, meta = {}) {
-    //     const issues = [];
-    //     for (const rule of this.rules) {
-    //         if (typeof rule.check === 'function') {
-    //             try {
-    //                 const findings = rule.check.call(rule, ast, meta, walkSimple) || [];
-    //                 findings.forEach(f => {
-    //                     issues.push({
-    //                         ruleId: rule.id,
-    //                         type: f.type || null,
-    //                         message: rule.description,
-    //                         file: f.file || meta.fileId || 'inline',
-    //                         start: f.start || null,
-    //                         end: f.end || null,
-    //                         line: f.line,
-    //                         column: f.column,
-    //                         severity: rule.severity || 'warning',
-    //                         // Added detailed source and sink info
-    //                         location: f.location || null,
-    //                         source: f.source || null,
-    //                         sink: f.sink || null
-    //                     });
-    //                 });
-    //             } catch (err) {
-    //                 console.log(`Error executing rule ${rule.id}:`, err);
-    //             }
-    //         }
-    //     }
-
-    //     return this._dedupe(issues);
-    // }
-
-
-    // scan(code, meta = {}) {
-    //     let ast;
-    //     try {
-    //         // Use ESM parse
-    //         ast = acorn.parse(code, { ecmaVersion: 'latest', sourceType: 'module', locations: true });
-    //     } catch (e) {
-    //         return [{
-    //             ruleId: 'parse-error',
-    //             message: `Parse error: ${e.message}`,
-    //             file: meta.fileId || 'inline',
-    //             line: e.loc?.line || null,
-    //             column: e.loc?.column || null,
-    //             severity: 'error'
-    //         }];
-    //     }
-
-    //     const issues = [];
-    //     for (const rule of this.rules) {
-    //         if (typeof rule.check === 'function') {
-    //             try {
-    //                 const findings = rule.check.call(rule, ast, meta, walkSimple) || [];
-    //                 findings.forEach(f => {
-    //                     issues.push({
-    //                         ruleId: rule.id,
-    //                         type: f.type || null,
-    //                         message: rule.description,
-    //                         file: f.file || meta.fileId || 'inline',
-    //                         start: f.start || null,
-    //                         end: f.end || null,
-    //                         line: f.line,
-    //                         column: f.column,
-    //                         severity: rule.severity || 'warning',
-    //                         // Added detailed source and sink info
-    //                         location: f.location || null,
-    //                         source: f.source || null,
-    //                         sink: f.sink || null
-    //                     });
-    //                 });
-    //             } catch (err) {
-    //                 console.log(`Error executing rule ${rule.id}:`, err);
-    //             }
-    //         }
-    //     }
-
-    //     return this._dedupe(issues);
-    // }
-
-    /**
-     * Deduplicate issues
-     */
-    _dedupe(issues) {
-        const seen = new Set();
-        return issues.filter(i => {
-            const key = `${i.file}:${i.start}:${i.end}:${i.ruleId}`;
-            if (seen.has(key)) return false;
-            seen.add(key);
-            return true;
-        });
-    }
 }
