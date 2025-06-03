@@ -108,7 +108,7 @@ export class ptk_sast {
         if (message.channel == "ptk_content_sast2background_sast") {
             if (message.type == 'scripts_collected') {
                 if (this.isScanRunning && this.scanResult.tabId == sender.tab.id) {
-                    this.scanCode(message.scripts, message.html).then((findings) => {
+                    this.scanCode(message.scripts, message.html, message.file).then((findings) => {
                         findings = this.removeDuplicates(findings)
                         if (findings.length > 0) {
                             this.scanResult.items.push(...findings)
@@ -144,15 +144,25 @@ export class ptk_sast {
     removeDuplicates(issues) {
 
         return issues.filter(i => {
-            let ind = this.scanResult.items.findIndex(e =>
-                e.ruleId == i.ruleId &&
-                e.file == i.file &&
-                e.start.line == i.start.line &&
-                e.start.column == i.start.column &&
-                e.end.line == i.end.line &&
-                e.end.column == i.end.column
-            )
-            const key = `${i.file}:${i.start}:${i.end}:${i.ruleId}`;
+            console.log(i)
+            let ind = 0
+            if (i.location) {
+                ind = this.scanResult.items.findIndex(e =>
+                    e.ruleId == i.ruleId &&
+                    e.severity == i.severity &&
+                    JSON.stringify(e.location) == JSON.stringify(i.location) &&
+                    e.file == i.file
+                )
+            } else if (i.sourceLoc && i.sinkLoc) {
+                ind = this.scanResult.items.findIndex(e =>
+                    e.ruleId == i.ruleId &&
+                    e.severity == i.severity &&
+                    JSON.stringify(e.sourceLoc) == JSON.stringify(i.sourceLoc) &&
+                    JSON.stringify(e.sinkLoc) == JSON.stringify(i.sinkLoc) &&
+                    e.sourceFileFull == i.sourceFileFull &&
+                    e.sinkFileFull == i.sinkFileFull
+                )
+            }
             if (ind > -1) return false;
             return true;
         });
@@ -187,9 +197,9 @@ export class ptk_sast {
     // }
 
 
-    async scanCode(scripts, html) {
+    async scanCode(scripts, html, file) {
         const engine = new sastEngine(this.scanResult.policy);
-        return await engine.scanCode(scripts, html)
+        return await engine.scanCode(scripts, html, file)
     }
 
     async msg_init(message) {

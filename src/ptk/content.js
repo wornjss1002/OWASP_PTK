@@ -23,7 +23,8 @@ setInterval(function () {
             channel: "ptk_content_sast2background_sast",
             type: "scripts_collected",
             scripts: scripts,
-            html: document.documentElement.innerHTML
+            html: document.documentElement.innerHTML,
+            file: document.URL
         });
 
     });

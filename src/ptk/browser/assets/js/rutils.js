@@ -267,8 +267,8 @@ export function bindSASTAttack(info, requestId = -1) {
                 </div>
                 `
     } else if (info.sinkFile && info.sourceFile) {
-        let sourceLocation = info.sourceFile.startsWith('inline') ? ptk_utils.escapeHtml(info.sourceFile) : `<a href="${ptk_utils.escapeHtml(info.sourceFile)}" target="_blank">${ptk_utils.escapeHtml(info.sourceFile)}</a>`
-        let sinkLocation = info.sinkFile.startsWith('inline') ? ptk_utils.escapeHtml(info.sinkFile) : `<a href="${ptk_utils.escapeHtml(info.sinkFile)}" target="_blank">${ptk_utils.escapeHtml(info.sinkFile)}</a>`
+        let sourceLocation = info.sourceFile.startsWith('inline') ? ptk_utils.escapeHtml(info.sourceFileFull) : `<a href="${ptk_utils.escapeHtml(info.sourceFile)}" target="_blank">${ptk_utils.escapeHtml(info.sourceFile)}</a>`
+        let sinkLocation = info.sinkFile.startsWith('inline') ? ptk_utils.escapeHtml(info.sinkFileFull) : `<a href="${ptk_utils.escapeHtml(info.sinkFile)}" target="_blank">${ptk_utils.escapeHtml(info.sinkFile)}</a>`
         item = `
                 <div class="card" style="width:100%">
                         <div class="content main">

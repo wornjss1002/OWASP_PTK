@@ -93,7 +93,7 @@ export class sastEngine {
     }
 
 
-    async scanCode(scripts, html = '') {
+    async scanCode(scripts, html = '', file = '') {
         // ----------------------------------------------------------
         // A) We want to keep codeByFile[fileId] = raw JavaScript text
         //    so that, later, we can extract the snippet by location.
@@ -221,7 +221,7 @@ export class sastEngine {
         const rawFindings = [];
         for (const rule of this.rules) {
             // Pass masterAST; the rule can read node.sourceFile if it wants.
-            const findings = rule.check.call(rule, masterAST, {}, ancestor) || [];
+            const findings = rule.check.call(rule, masterAST, { file: file }, ancestor) || [];
             rawFindings.push(...findings);
         }
 
