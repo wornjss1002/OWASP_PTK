@@ -245,31 +245,51 @@ function isURLParamSource(node) {
 }
 
 //
-// Detect certain call‐based sources (storage/history APIs):
+// Detect certain call‐based sources (storage/history APIs) OR createContextualFragment(...):
 //   - localStorage.getItem(...)
 //   - sessionStorage.getItem(...)
 //   - history.pushState(...)
 //   - history.replaceState(...)
+//   - Any call to `.createContextualFragment(...)` (so we can propagate `frag = createContextualFragment(input)`).
 //
 function isCallSource(node) {
     if (!node || node.type !== 'CallExpression') return false;
     const callee = node.callee;
+
+    // storage/history APIs
     if (
         callee.type === 'MemberExpression' &&
         matchesPath(callee, ['localStorage', 'getItem'])
-    ) return true;
+    ) {
+        return true;
+    }
     if (
         callee.type === 'MemberExpression' &&
         matchesPath(callee, ['sessionStorage', 'getItem'])
-    ) return true;
+    ) {
+        return true;
+    }
     if (
         callee.type === 'MemberExpression' &&
         matchesPath(callee, ['history', 'pushState'])
-    ) return true;
+    ) {
+        return true;
+    }
     if (
         callee.type === 'MemberExpression' &&
         matchesPath(callee, ['history', 'replaceState'])
-    ) return true;
+    ) {
+        return true;
+    }
+
+    // createContextualFragment(...) as a “call‐source”
+    if (
+        callee.type === 'MemberExpression' &&
+        callee.property.name === 'createContextualFragment'
+    ) {
+        return true;
+    }
+
     return false;
 }
 
@@ -360,7 +380,13 @@ const Taint = {
             n.callee.type === 'MemberExpression' &&
             matchesPath(n.callee, ['window', 'open']),
 
-        // h) ANY assignment to “location” or its sub‐properties (search, hash, href, host, origin, etc.)
+        // h) appendChild(...)
+        n =>
+            n.type === 'CallExpression' &&
+            n.callee.type === 'MemberExpression' &&
+            n.callee.property.name === 'appendChild',
+
+        // i) ANY assignment to “location” or its sub‐properties (search, hash, href, host, origin, etc.)
         n =>
             n.type === 'AssignmentExpression' &&
             (
@@ -368,7 +394,13 @@ const Taint = {
                 (n.left.type === 'Identifier' && n.left.name === 'location') ||
                 // OR left is any MemberExpression matching our allLocPaths
                 (n.left.type === 'MemberExpression' && allLocPaths.some(path => matchesPath(n.left, path)))
-            )
+            ),
+
+        // j) New Function(…) constructor – dynamic code evaluation
+        n =>
+            n.type === 'NewExpression' &&
+            n.callee.type === 'Identifier' &&
+            n.callee.name === 'Function'
     ],
 
     // 2) Sanitizers: functions known to “clean” HTML, e.g. DOMPurify.sanitize
@@ -430,35 +462,54 @@ const Taint = {
 
         //
         // 2) Identify “wrapper‐sink” functions:
+        //
+        // We now mark a function as a wrapper‐sink if its body contains:
+        //   a) any sink (call to insertAdjacentHTML/appendChild/eval/…) OR new Function(…),
+        //   b) and also references its first parameter anywhere.
+        //
         ancestor(
             ast,
             {
                 FunctionDeclaration(fn) {
                     const name = fn.id?.name;
-                    const param = fn.params[0];
-                    if (!name || !param || param.type !== 'Identifier') return;
-                    let wraps = false;
+                    if (!name) return;
+                    const params = fn.params;
+                    if (params.length === 0 || params[0].type !== 'Identifier') return;
+                    const paramName = params[0].name;
 
+                    let containsAnySink = false;
+                    let containsParamUse = false;
+
+                    // (a) Check for any sink invocation or NewExpression “Function(...)” in the function body
                     ancestor(
                         fn.body,
                         {
                             CallExpression(call) {
-                                if (
-                                    self.sinks.some(test => test(call)) &&
-                                    hasIdentifier(call.arguments[0] || call, param.name)
-                                ) wraps = true;
+                                if (self.sinks.some(test => test(call))) {
+                                    containsAnySink = true;
+                                }
                             },
                             AssignmentExpression(a) {
+                                if (self.sinks.some(test => test(a))) {
+                                    containsAnySink = true;
+                                }
+                            },
+                            NewExpression(ne) {
                                 if (
-                                    self.sinks.some(test => test(a)) &&
-                                    hasIdentifier(a.right, param.name)
-                                ) wraps = true;
+                                    ne.callee.type === 'Identifier' &&
+                                    ne.callee.name === 'Function'
+                                ) {
+                                    containsAnySink = true;
+                                }
                             }
                         },
                         base
                     );
 
-                    if (wraps) {
+                    // (b) Check if the function body references the parameter at all
+                    containsParamUse = hasIdentifier(fn.body, paramName);
+
+                    if (containsAnySink && containsParamUse) {
                         wrapperSinks.set(name, {
                             loc: fn.loc,
                             file: fn.sourceFile
@@ -504,12 +555,16 @@ const Taint = {
                         init.arguments.length > 0 &&
                         isDirectSource(init.arguments[0]);
 
+                    // C) If initializer is a “call‐source” (including createContextualFragment), mark var tainted
+                    const isCallBasedSource = init && isCallSource(init);
+
                     if (
                         isDirectSource(init) ||
                         isURLParamSource(init) ||
                         isCallSource(init) ||
                         foundWrapper ||
-                        isNewUrlSearchParams
+                        isNewUrlSearchParams ||
+                        isCallBasedSource
                     ) {
                         // Store full decl.loc
                         taintedVars.set(decl.id.name, {
@@ -530,6 +585,7 @@ const Taint = {
                         right.arguments.length > 0 &&
                         isDirectSource(right.arguments[0]);
 
+                    // If we assign a tainted or direct‐source expression into an identifier, mark it tainted
                     if (
                         left.type === 'Identifier' &&
                         (
@@ -541,7 +597,6 @@ const Taint = {
                             isNewUrlSearchParams
                         )
                     ) {
-                        // Store full left.loc
                         taintedVars.set(left.name, {
                             loc: left.loc,
                             file: left.sourceFile
@@ -550,7 +605,7 @@ const Taint = {
                 },
 
                 CallExpression(c, ancestors) {
-                    // If this call is a wrapper‐source, taint its container variable
+                    // 3a) If this call is a wrapper‐source, taint its container variable
                     if (
                         c.callee.type === 'Identifier' &&
                         wrapperSources.has(c.callee.name)
@@ -558,7 +613,6 @@ const Taint = {
                         for (let i = ancestors.length - 2; i >= 0; i--) {
                             const parent = ancestors[i];
                             if (parent.type === 'VariableDeclarator') {
-                                // full parent.loc
                                 taintedVars.set(parent.id.name, {
                                     loc: parent.loc,
                                     file: parent.id.sourceFile
@@ -578,7 +632,7 @@ const Taint = {
                         }
                     }
 
-                    // Propagate taint through nested calls:
+                    // 3b) Propagate taint through nested calls:
                     c.arguments.forEach(arg => {
                         if (arg.type === 'Identifier' && taintedVars.has(arg.name)) {
                             for (let i = ancestors.length - 2; i >= 0; i--) {
@@ -633,13 +687,13 @@ const Taint = {
 
                     if (isHtmlSink || isCookieSink || isNameSink || isLocationSearchSink) {
                         const rhs = a.right;
-                        const rhsHasTaintedVar    = containsTainted(rhs, taintedVars);
-                        const rhsHasDirectSource  = isDirectSource(rhs);
-                        const rhsHasURLParam      = isURLParamSource(rhs);
-                        const rhsHasCallSource    = isCallSource(rhs);
+                        const rhsHasTaintedVar = containsTainted(rhs, taintedVars);
+                        const rhsHasDirectSource = isDirectSource(rhs);
+                        const rhsHasURLParam = isURLParamSource(rhs);
+                        const rhsHasCallSource = isCallSource(rhs);
                         const rhsHasWrapperSource = containsWrapperSourceCall(rhs, wrapperSources);
                         const rhsHasParamGetSource = isParamGetSource(rhs, taintedVars);
-                        const rhsHasHashSource    = containsHashSource(rhs);
+                        const rhsHasHashSource = containsHashSource(rhs);
 
                         // Always compute sourceName from rhs
                         const sourceName = nodeToString(rhs);
@@ -664,10 +718,10 @@ const Taint = {
                         }
 
                         if (
-                            rhsHasTaintedVar    ||
-                            rhsHasDirectSource  ||
-                            rhsHasURLParam      ||
-                            rhsHasCallSource    ||
+                            rhsHasTaintedVar ||
+                            rhsHasDirectSource ||
+                            rhsHasURLParam ||
+                            rhsHasCallSource ||
                             rhsHasWrapperSource ||
                             rhsHasParamGetSource ||
                             rhsHasHashSource
@@ -708,17 +762,24 @@ const Taint = {
                                 file: a.left.sourceFile
                             };
 
+                            // let sourceFile = srcInfo.file
+                            // if (sourceFile.startsWith('inline')) sourceFile += " in " + meta.file
+                            // let sinkFile = sinkInfo.file
+                            // if (sinkFile.startsWith('inline')) sinkFile += " in " + meta.file
+
                             issues.push({
-                                ruleId:      self.id,
+                                ruleId: self.id,
                                 description: self.description,
-                                severity:    self.severity,
-                                type:        'AssignmentExpression',
+                                severity: self.severity,
+                                type: 'AssignmentExpression',
                                 sourceName,
                                 sinkName,
-                                sourceFile:  srcInfo.file,
-                                sourceLoc:   srcInfo.loc,
-                                sinkFile:    sinkInfo.file,
-                                sinkLoc:     sinkInfo.loc
+                                sourceFile: srcInfo.file,
+                                sourceFileFull: srcInfo.file.startsWith('inline') ? srcInfo.file +  " in " + meta.file : srcInfo.file,
+                                sourceLoc: srcInfo.loc,
+                                sinkFile: sinkInfo.file,
+                                sinkFileFull: sinkInfo.file.startsWith('inline') ? sinkInfo.file +  " in " + meta.file : sinkInfo.file,
+                                sinkLoc: sinkInfo.loc
                             });
                         }
                     }
@@ -728,12 +789,12 @@ const Taint = {
         );
 
         //
-        // 4b) Detect “call” sinks (eval, insertAdjacentHTML, window.open) AND “wrapper‐sink” calls
+        // 4b) Detect “call” sinks (eval, insertAdjacentHTML, appendChild, window.open) AND “NewExpression” sink (`new Function`) AND “wrapper‐sink” calls
         ancestor(
             ast,
             {
                 CallExpression(c) {
-                    // 4b-1) direct call-sink: eval(x), node.insertAdjacentHTML(x), window.open(x)
+                    // 4b-1) direct call-sink: eval(x), node.insertAdjacentHTML(x), node.appendChild(x), window.open(x)
                     if (self.sinks.some(test => test(c))) {
                         const arg = c.arguments[0];
                         const argHasTaintedVar = containsTainted(arg, taintedVars);
@@ -750,7 +811,7 @@ const Taint = {
                         // Compute sinkName from c.callee
                         let sinkName = '';
                         if (c.callee.type === 'MemberExpression') {
-                            sinkName = c.callee.property.name; // e.g. "insertAdjacentHTML" or "open"
+                            sinkName = c.callee.property.name; // e.g. "insertAdjacentHTML", "appendChild", or "open"
                         } else if (c.callee.type === 'Identifier') {
                             sinkName = c.callee.name; // e.g. "eval"
                         } else {
@@ -758,10 +819,10 @@ const Taint = {
                         }
 
                         if (
-                            argHasTaintedVar    ||
-                            argHasDirectSource  ||
-                            argHasURLParam      ||
-                            argHasCallSource    ||
+                            argHasTaintedVar ||
+                            argHasDirectSource ||
+                            argHasURLParam ||
+                            argHasCallSource ||
                             argHasWrapperSource ||
                             argHasParamGetSource ||
                             argHasHashSource
@@ -800,17 +861,25 @@ const Taint = {
                                 file: c.callee.sourceFile
                             };
 
+                            // let sourceFile = srcInfo.file
+                            // if (sourceFile.startsWith('inline')) sourceFile += " in " + meta.file
+                            // let sinkFile = sinkInfo.file
+                            // if (sinkFile.startsWith('inline')) sinkFile += " in " + meta.file
+
                             issues.push({
-                                ruleId:      self.id,
+                                ruleId: self.id,
                                 description: self.description,
-                                severity:    self.severity,
-                                type:        'CallExpression',
+                                severity: self.severity,
+                                type: 'CallExpression',
                                 sourceName,
                                 sinkName,
-                                sourceFile:  srcInfo.file,
-                                sourceLoc:   srcInfo.loc,
-                                sinkFile:    sinkInfo.file,
-                                sinkLoc:     sinkInfo.loc
+                                sourceFile: srcInfo.file,
+                                sourceFileFull: srcInfo.file.startsWith('inline') ? srcInfo.file +  " in " + meta.file : srcInfo.file,
+                                sourceLoc: srcInfo.loc,
+                                sinkFile: sinkInfo.file,
+                                sinkFileFull: sinkInfo.file.startsWith('inline') ? sinkInfo.file +  " in " + meta.file : sinkInfo.file,
+                                sinkLoc: sinkInfo.loc
+
                             });
                         }
                     }
@@ -832,10 +901,10 @@ const Taint = {
                         const sinkName = c.callee.name; // wrapper function name, e.g. "runSink"
 
                         if (
-                            argHasTaintedVar    ||
-                            argHasDirectSource  ||
-                            argHasURLParam      ||
-                            argHasCallSource    ||
+                            argHasTaintedVar ||
+                            argHasDirectSource ||
+                            argHasURLParam ||
+                            argHasCallSource ||
                             argHasWrapperSource ||
                             argHasParamGetSource ||
                             argHasHashSource
@@ -870,17 +939,115 @@ const Taint = {
 
                             const sinkLocObj = wrapperSinks.get(c.callee.name);
 
+                            // let sourceFile = srcInfo.file
+                            // if (sourceFile.startsWith('inline')) sourceFile += " in " + meta.file
+                            // let sinkFile = sinkLocObj.file
+                            // if (sinkFile.startsWith('inline')) sinkFile += " in " + meta.file
+
                             issues.push({
-                                ruleId:      self.id,
+                                ruleId: self.id,
                                 description: self.description,
-                                severity:    self.severity,
-                                type:        'CallExpression',
+                                severity: self.severity,
+                                type: 'CallExpression',
                                 sourceName,
                                 sinkName,
-                                sourceFile:  srcInfo.file,
-                                sourceLoc:   srcInfo.loc,
-                                sinkFile:    sinkLocObj.file,
-                                sinkLoc:     sinkLocObj.loc
+                                sourceFile: srcInfo.file,
+                                sourceFileFull: srcInfo.file.startsWith('inline') ? srcInfo.file +  " in " + meta.file : srcInfo.file,
+                                sourceLoc: srcInfo.loc,
+                                sinkFile: sinkLocObj.file,
+                                sinkFileFull: sinkLocObj.file.startsWith('inline') ? sinkLocObj.file +  " in " + meta.file : sinkLocObj.file,
+                                sinkLoc: sinkLocObj.loc
+                            });
+                        }
+                    }
+                },
+
+                //
+                // 4b-3) Detect “NewExpression” sinks (new Function(str)):
+                //         If str contains tainted data (or a direct source, etc.), flag it.
+                NewExpression(ne) {
+                    if (
+                        ne.callee.type === 'Identifier' &&
+                        ne.callee.name === 'Function'
+                    ) {
+                        // The first argument (ne.arguments[0]) is the string to execute.
+                        const arg = ne.arguments[0];
+                        const argHasTaintedVar = containsTainted(arg, taintedVars);
+                        const argHasDirectSource = isDirectSource(arg);
+                        const argHasURLParam = isURLParamSource(arg);
+                        const argHasCallSource = isCallSource(arg);
+                        const argHasWrapperSource = containsWrapperSourceCall(arg, wrapperSources);
+                        const argHasParamGetSource = isParamGetSource(arg, taintedVars);
+                        const argHasHashSource = containsHashSource(arg);
+
+                        // Compute sourceName from arg
+                        const sourceName = nodeToString(arg);
+
+                        // sinkName is simply "Function"
+                        const sinkName = 'Function';
+
+                        if (
+                            argHasTaintedVar ||
+                            argHasDirectSource ||
+                            argHasURLParam ||
+                            argHasCallSource ||
+                            argHasWrapperSource ||
+                            argHasParamGetSource ||
+                            argHasHashSource
+                        ) {
+                            // Determine sourceFile/sourceLoc
+                            let srcInfo = {};
+                            if (argHasTaintedVar) {
+                                srcInfo = getFirstTaintedInfo(arg, taintedVars);
+                            } else if (argHasWrapperSource) {
+                                let info = {};
+                                ancestor(
+                                    arg,
+                                    {
+                                        CallExpression(inner) {
+                                            if (
+                                                inner.callee.type === 'Identifier' &&
+                                                wrapperSources.has(inner.callee.name) &&
+                                                Object.keys(info).length === 0
+                                            ) {
+                                                info = wrapperSources.get(inner.callee.name);
+                                            }
+                                        }
+                                    },
+                                    base
+                                );
+                                srcInfo = info;
+                            } else {
+                                srcInfo = {
+                                    loc: arg ? arg.loc : {},
+                                    file: arg ? arg.sourceFile : undefined
+                                };
+                            }
+
+                            // sinkLoc is ne.loc, and sinkFile is ne.callee.sourceFile
+                            const sinkInfo = {
+                                loc: ne.loc,
+                                file: ne.callee.sourceFile
+                            };
+
+                            // let sourceFile = srcInfo.file
+                            // if (sourceFile.startsWith('inline')) sourceFile += " in " + meta.file
+                            // let sinkFile = sinkInfo.file
+                            // if (sinkFile.startsWith('inline')) sinkFile += " in " + meta.file
+
+                            issues.push({
+                                ruleId: self.id,
+                                description: self.description,
+                                severity: self.severity,
+                                type: 'NewExpression',
+                                sourceName,
+                                sinkName,
+                                sourceFile: srcInfo.file,
+                                sourceFileFull: srcInfo.file.startsWith('inline') ? srcInfo.file +  " in " + meta.file : srcInfo.file,
+                                sourceLoc: srcInfo.loc,
+                                sinkFile: sinkInfo.file,
+                                sinkFileFull: sinkInfo.file.startsWith('inline') ? sinkInfo.file +  " in " + meta.file : sinkInfo.file,
+                                sinkLoc: sinkInfo.loc
                             });
                         }
                     }
