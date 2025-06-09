@@ -1,7 +1,6 @@
 /* Author: Denis Podgurskii */
 import { ptk_utils } from "../background/utils.js"
 import { jsonLogic } from '../background/lib/json-logic-js.js'
-import { httpZ } from "../background/lib/httpZ.esm.js"
 
 export class ptk_module {
     constructor(module) {
