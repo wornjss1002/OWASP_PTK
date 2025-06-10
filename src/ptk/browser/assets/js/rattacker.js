@@ -19,6 +19,20 @@ jQuery(function () {
         })
 
 
+    //$('.question').popup()
+    // $('.domains_example')
+    //     .popup({
+    //         position: 'right center',
+
+    //         title: 'Example',
+    //         content: `<i>Example: <br /> domain.com, api.domain.com, subdomain.domain.com, www.domain.com</i>
+    //             <br />
+    //             <b>OR</b>
+    //             <br />
+    //             <i>*.domain.com - to scan all subdomains</i>`
+    //     })
+
+
     $(document).on("click", ".showHtml", function () {
         rutils.showHtml($(this))
     })
@@ -63,12 +77,18 @@ jQuery(function () {
             let h = new URL(result.activeTab.url).host
             $('#scan_host').text(h)
             $('#scan_domains').text(h)
+            $('#maxRequestsPerSecond').val(result.settings.maxRequestsPerSecond)
+            $('#concurrency').val(result.settings.concurrency)
 
             $('#run_scan_dlg')
                 .modal({
                     allowMultiple: true,
                     onApprove: function () {
-                        controller.runBackroungScan(result.activeTab.tabId, h, $('#scan_domains').val()).then(function (result) {
+                        const settings = {
+                            maxRequestsPerSecond: $('#maxRequestsPerSecond').val(),
+                            concurrency: $('#concurrency').val()
+                        }
+                        controller.runBackroungScan(result.activeTab.tabId, h, $('#scan_domains').val(), settings).then(function (result) {
                             $("#request_info").html("")
                             $("#attacks_info").html("")
                             $(document).trigger("bind_stats", result.scanResult)
@@ -77,6 +97,16 @@ jQuery(function () {
                     }
                 })
                 .modal('show')
+            $('#dast_form .question')
+                .popup({
+                    inline: true,
+                    hoverable: true,
+                    position: 'bottom left',
+                    delay: {
+                        show: 300,
+                        hide: 800
+                    }
+                })
         })
 
         return false

@@ -1,5 +1,5 @@
 // dastEngine.js
-import { ptk_module } from "../../modules/module.js"
+import { ptk_module } from "./modules/module.js"
 import { ptk_request } from "../rbuilder.js"
 import { ptk_utils, ptk_queue, ptk_ruleManager } from "../utils.js"
 
@@ -10,8 +10,8 @@ export class dastEngine {
      */
     constructor(settings = {}) {
         this.settings = settings
-        this.maxRequestsPerSecond = settings.maxRequestsPerSecond || 10
-        this.concurrency = settings.concurrency || 2 // 1=sequential
+        this.maxRequestsPerSecond = settings.maxRequestsPerSecond
+        this.concurrency = settings.concurrency
         this.reset()
 
         this.loadModules()
@@ -20,7 +20,6 @@ export class dastEngine {
 
     reset() {
         this.isRunning = false
-        this.result = this.getEmptyScanResult()
         this.tokens = this.maxRequestsPerSecond
         this.lastRefill = Date.now()
         this.tokenRefillInterval = 1000
@@ -29,7 +28,7 @@ export class dastEngine {
     }
 
     async loadModules() {
-        const resp = await fetch(browser.runtime.getURL('ptk/modules/modules.json'))
+        const resp = await fetch(browser.runtime.getURL('ptk/background/dast/modules/modules.json'))
         const json = await resp.json()
         this.modules = Object.values(json.modules).map(m => new ptk_module(m))
     }
@@ -99,16 +98,19 @@ export class dastEngine {
         }
     }
 
+
+
     isAllowed(response) {
         let allowed = true
         let url = new URL(response.url)
         if (this.settings.blacklist.includes(response.type) && !url.search) {
             allowed = false
         } else {
-            if (!url.host.includes(this.host)) allowed = false
-            if (this.domains.findIndex(i => url.host.includes(i)) > 0) allowed = true
+            if (!url.host.includes(this.host) &&
+                this.domains.findIndex(i => url.host.includes(i)) < 0) {
+                allowed = false
+            }
         }
-
         return allowed
     }
 
@@ -156,13 +158,16 @@ export class dastEngine {
             }).catch(e => console.log(e));
     }
 
-    async start(tabId, host, domains) {
+    async start(tabId, host, domains, settings = {}) {
         this.reset()
         this.tabId = tabId
-        this.host = host
+        this.scanResult.host = this.host = host
         this.domains = domains
         this.isRunning = true
-        this.scanId = ptk_utils.UUID()
+        this.scanResult.scanId = this.scanId = ptk_utils.UUID()
+
+        this.maxRequestsPerSecond = settings.maxRequestsPerSecond || this.settings.maxRequestsPerSecond
+        this.concurrency = settings.concurrency || this.settings.concurrency
 
         this.inProgress = false
         this.run()
@@ -174,7 +179,7 @@ export class dastEngine {
 
     async run() {
         if (!this.isRunning) return
-       
+
         const self = this
         if (!this.inProgress) {
             if (this.concurrency === 1) {
@@ -226,8 +231,22 @@ export class dastEngine {
         self.inProgress = false
     }
 
+    async onetimeScanRequest(raw) {
+        let result = await this.scanRequest(raw, true)
+        let stats = { vulnsCount: 0, high: 0, medium: 0, low: 0, attacksCount: 0 }
+        for (let i in result.attacks) {
+            stats.attacksCount++
+            if (result.attacks[i].success) {
+                stats.vulnsCount++
+                if (result.attacks[i].metadata.severity == 'High') stats.high++
+                if (result.attacks[i].metadata.severity == 'Medium') stats.medium++
+                if (result.attacks[i].metadata.severity == 'Low') stats.low++
+            }
+        }
+        return Object.assign({}, result, { stats: stats })
+    }
 
-    async scanRequest(raw) {
+    async scanRequest(raw, ontime = false) {
         const schema = ptk_request.parseRawRequest(raw)
         const original = await this.executeOriginal(schema)
         const attacks = []
@@ -238,9 +257,10 @@ export class dastEngine {
         // For each module, run attacks
         for (const module of this.modules) {
             for (const attackDef of module.attacks) {
-
-                while (!this.canSendRequest() && this.isRunning) {
-                    await this._sleep(20);
+                if (!ontime) {
+                    while (!this.canSendRequest() && this.isRunning) {
+                        await this._sleep(20);
+                    }
                 }
                 const attack = module.prepareAttack(attackDef)
                 if (attack.condition) {

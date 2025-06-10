@@ -308,21 +308,24 @@ jQuery(function () {
 
         let report = ""
 
-        result.scanResult.items.filter((item) => item.stats.high > 0).forEach(item => {
+        //result.scanResult.items.filter((item) => item.stats.high > 0)
+        result.scanResult.items.filter(item => item.attacks.some(a => a.success == true && a.metadata.severity.toLowerCase() == 'high')).forEach(item => {
             for (let y in item.attacks) {
                 if (item.attacks[y].success && item.attacks[y].metadata.severity == 'High')
                     $("#rattacker_content").append(bindReportItem(item.attacks[y], item.original))
             }
         })
 
-        result.scanResult.items.filter((item) => item.stats.medium > 0).forEach(item => {
+        //result.scanResult.items.filter((item) => item.stats.medium > 0)
+        result.scanResult.items.filter(item => item.attacks.some(a => a.success == true && a.metadata.severity.toLowerCase() == 'medium') ).forEach(item => {
             for (let y in item.attacks) {
                 if (item.attacks[y].success && item.attacks[y].metadata.severity == 'Medium')
                     $("#rattacker_content").append(bindReportItem(item.attacks[y], item.original))
             }
         })
 
-        result.scanResult.items.filter((item) => item.stats.low > 0).forEach(item => {
+        //result.scanResult.items.filter((item) => item.stats.low > 0)
+        result.scanResult.items.filter(item => item.attacks.some(a => a.success == true && a.metadata.severity.toLowerCase() == 'low') ).forEach(item => {
             for (let y in item.attacks) {
                 if (item.attacks[y].success && item.attacks[y].metadata.severity == 'Low')
                     $("#rattacker_content").append(bindReportItem(item.attacks[y], item.original))

@@ -32,7 +32,9 @@
             "image",
             "font"
         ],
-        "enable_external_integration": false
+        "enable_external_integration": false,
+        "maxRequestsPerSecond": 5,
+        "concurrency": 1
     },
     "decoder": {
         "settings": {}

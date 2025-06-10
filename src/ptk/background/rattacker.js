@@ -27,6 +27,7 @@ export class ptk_rattacker {
 
     async reset() {
         this.engine.reset()
+        this.scanResult = this.engine.scanResult
         ptk_storage.setItem(this.storageKey, {})
     }
 
@@ -136,7 +137,8 @@ export class ptk_rattacker {
             scanResult: JSON.parse(JSON.stringify(this.scanResult)),
             isScanRunning: this.engine.isRunning,
             default_modules: JSON.parse(JSON.stringify(this.engine.modules)),
-            activeTab: worker.ptk_app.proxy.activeTab
+            activeTab: worker.ptk_app.proxy.activeTab,
+            settings: this.settings
         })
     }
 
@@ -278,7 +280,7 @@ export class ptk_rattacker {
             return Promise.resolve({
                 scanResult: JSON.parse(JSON.stringify(this.scanResult)),
                 isScanRunning: this.engine.isRunning,
-                default_modules: JSON.parse(JSON.stringify(this.modules)),
+                default_modules: JSON.parse(JSON.stringify(this.engine.modules)),
                 activeTab: worker.ptk_app.proxy.activeTab
             })
         } else {
@@ -287,7 +289,7 @@ export class ptk_rattacker {
     }
 
     msg_run_bg_scan(message) {
-        this.runBackroungScan(message.tabId, message.host, message.domains)
+        this.runBackroungScan(message.tabId, message.host, message.domains, message.settings)
         return Promise.resolve({ isScanRunning: this.engine.isRunning, scanResult: JSON.parse(JSON.stringify(this.scanResult)) })
     }
 
@@ -296,10 +298,10 @@ export class ptk_rattacker {
         return Promise.resolve({ scanResult: JSON.parse(JSON.stringify(this.scanResult)) })
     }
 
-    runBackroungScan(tabId, host, domains) {
+    runBackroungScan(tabId, host, domains, settings) {
         this.reset()
         this.addListeners()
-        this.engine.start(tabId, host, this.parseDomains(domains))
+        this.engine.start(tabId, host, this.parseDomains(domains), settings)
     }
 
     stopBackroungScan() {
