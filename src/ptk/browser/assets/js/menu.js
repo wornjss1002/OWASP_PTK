@@ -69,7 +69,7 @@ jQuery(function () {
 
                     <a class="item" href="swagger-editor.html" data-history="swagger-editor">Swagger</a>
 
-                    <a class="item" href="portscanner.html" data-history="portscanner">Port Scanner</a>
+                    <!--a class="item" href="portscanner.html" data-history="portscanner">Port Scanner</a-->
                     </div>
                 </div>
                 <div style="position: absolute;width: 30px;height: 30px;right: 47px;top: -6px;"> 

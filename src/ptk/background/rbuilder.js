@@ -134,7 +134,7 @@ export class ptk_request_manager {
     }
 
     async msg_scan_request(message) {
-        worker.ptk_app.rattacker.scanRequest(message.schema.request.raw).then(scanResult => {
+        worker.ptk_app.rattacker.engine.onetimeScanRequest(message.schema.request.raw, true).then(scanResult => {
             let request_manager = worker.ptk_app.request_manager
             if (request_manager.storage[message.formId]) {
                 request_manager.storage[message.formId]['scanResult'] = JSON.parse(JSON.stringify(scanResult))

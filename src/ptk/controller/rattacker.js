@@ -12,13 +12,14 @@ export class ptk_controller_rattacker {
     //     }).catch(e => e)
     // }
 
-    async runBackroungScan(tabId, host, domains){
+    async runBackroungScan(tabId, host, domains, settings){
         return browser.runtime.sendMessage({
             channel: "ptk_popup2background_rattacker",
             type: "run_bg_scan",
             tabId: tabId,
             host: host,
-            domains: domains
+            domains: domains,
+            settings: settings
         }).then(response => {
             return response
         }).catch(e => e)

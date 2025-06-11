@@ -352,6 +352,9 @@ $(document).on("click", "#manage_scans", function () {
         $('#scan_domains').text(h)
         changeScanView(result)
 
+        let settings = result.scans.dastSettings
+        $('#maxRequestsPerSecond').val(settings.maxRequestsPerSecond)
+        $('#concurrency').val(settings.concurrency)
 
         $('#run_scan_dlg')
             .modal({
@@ -365,12 +368,27 @@ $(document).on("click", "#manage_scans", function () {
                         sca: values['sca_scan'] == 'on' ? true : false,
                     }
                     let sast_policy = $('#policy').val()
-                    controller.runBackroungScan(result.activeTab.tabId, h, $('#scan_domains').val(), s, sast_policy).then(function (result) {
+                    const settings = {
+                        maxRequestsPerSecond: $('#maxRequestsPerSecond').val(),
+                        concurrency: $('#concurrency').val(),
+                        sast_policy : $('#policy').val()
+                    }
+                    controller.runBackroungScan(result.activeTab.tabId, h, $('#scan_domains').val(), s, settings).then(function (result) {
                         //changeView(result)
                     })
                 }
             })
             .modal('show')
+        $('#scans_form .question')
+            .popup({
+                inline: true,
+                hoverable: true,
+                position: 'bottom left',
+                delay: {
+                    show: 300,
+                    hide: 800
+                }
+            })
     })
 
     return false
