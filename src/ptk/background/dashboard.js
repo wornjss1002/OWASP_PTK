@@ -198,14 +198,14 @@ export class ptk_dashboard {
     }
 
     async msg_run_bg_scan(message) {
-        
-        if (message.scans.dast) worker.ptk_app.rattacker.runBackroungScan(message.tabId, message.host, message.domains)
+
+        if (message.scans.dast) worker.ptk_app.rattacker.runBackroungScan(message.tabId, message.host, message.domains, message.settings)
         if (message.scans.iast) worker.ptk_app.iast.runBackroungScan(message.tabId, message.host)
-        if (message.scans.sast) worker.ptk_app.sast.runBackroungScan(message.tabId, message.host, message.policy)
+        if (message.scans.sast) worker.ptk_app.sast.runBackroungScan(message.tabId, message.host, message.settings.policy)
         if (message.scans.sca) worker.ptk_app.sca.runBackroungScan(message.tabId, message.host)
 
         let scans = {
-            dast: worker.ptk_app.rattacker.isScanRunning,
+            dast: worker.ptk_app.rattacker.engine.isRunning,
             iast: worker.ptk_app.iast.isScanRunning,
             sast: worker.ptk_app.sast.isScanRunning,
             sca: worker.ptk_app.sca.isScanRunning
@@ -222,12 +222,12 @@ export class ptk_dashboard {
         if (message.scans.sca) worker.ptk_app.sca.stopBackroungScan()
 
         let scans = {
-            dast: worker.ptk_app.rattacker.isScanRunning,
+            dast: worker.ptk_app.rattacker.engine.isRunning,
             iast: worker.ptk_app.iast.isScanRunning,
             sast: worker.ptk_app.sast.isScanRunning,
             sca: worker.ptk_app.sca.isScanRunning
         }
-    
+
         return Promise.resolve(Object.assign({}, { scans: JSON.parse(JSON.stringify(scans)) }))
     }
 
@@ -259,10 +259,11 @@ export class ptk_dashboard {
         }
 
         let scans = {
-            dast: worker.ptk_app.rattacker.isScanRunning,
+            dast: worker.ptk_app.rattacker.engine.isRunning,
             iast: worker.ptk_app.iast.isScanRunning,
             sast: worker.ptk_app.sast.isScanRunning,
-            sca: worker.ptk_app.sca.isScanRunning
+            sca: worker.ptk_app.sca.isScanRunning,
+            dastSettings: worker.ptk_app.rattacker.settings
         }
         //this.Wappalyzer = Wappalyzer
 
@@ -356,10 +357,10 @@ export class HttpHeadersCheck {
 
         if (data['X-Powered-By'].length)
             findings.push(['X-Powered-By', 'X-Powered-By HTTP header reveals the server configuration', data['X-Powered-By'].join("<br/>")])
-        
+
         if (data['X-Frame-Options'].length)
             findings.push(['X-Frame-Options', 'X-Frame-Options header is deprecated', data['X-Frame-Options'].join("<br/>")])
-        if (data['X-XSS-Protection'].length )
+        if (data['X-XSS-Protection'].length)
             HttpHeadersCheck.findings.push(['X-XSS-Protection', 'X-XSS-Protection header is deprecated', data['X-XSS-Protection'].join("<br/>")])
 
         return findings

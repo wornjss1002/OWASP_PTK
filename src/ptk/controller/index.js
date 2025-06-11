@@ -30,7 +30,7 @@ export class ptk_controller_index {
         return browser.runtime.sendMessage({ channel: "ptk_popup2background_dashboard", type: "save", items: items }).catch(e => e)
     }
 
-    async runBackroungScan(tabId, host, domains, scans, policy) {
+    async runBackroungScan(tabId, host, domains, scans, settings) {
         return browser.runtime.sendMessage({
             channel: "ptk_popup2background_dashboard",
             type: "run_bg_scan",
@@ -38,7 +38,7 @@ export class ptk_controller_index {
             host: host,
             domains: domains,
             scans: scans,
-            policy: policy
+            settings: settings
         }).then(response => {
             return response
         }).catch(e => e)
