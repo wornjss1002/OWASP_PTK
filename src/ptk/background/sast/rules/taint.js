@@ -127,6 +127,29 @@ function nodeToString(node) {
     return node.type;
 }
 
+function isSafeLiteral(node) {
+    if (!node) return false;
+    if (node.type === 'Literal' && typeof node.value === 'string') return true;
+    if (node.type === 'TemplateLiteral' && node.expressions.length === 0) return true;
+    return false;
+}
+
+// Detect sanitizer calls in a subtree.
+function isSanitized(node, sanitizers) {
+    if (!node) return false;
+    let cleaned = false;
+    ancestor(node,
+        {
+            CallExpression(c) {
+                if (sanitizers.some(fn => fn(c))) cleaned = true;
+            }
+        },
+        base
+    );
+    return cleaned;
+}
+
+
 //
 // List of every “location‐based” path we treat as a source _or_ sink.
 // (We will use this both in isDirectSource(...) and in isLocationSink(...).)
@@ -425,6 +448,8 @@ const Taint = {
         // Final list of issues to return
         const issues = [];
 
+        if (issues.length > 300) return
+
         //
         // 1) Identify “wrapper‐source” functions:
         ancestor(
@@ -687,6 +712,7 @@ const Taint = {
 
                     if (isHtmlSink || isCookieSink || isNameSink || isLocationSearchSink) {
                         const rhs = a.right;
+                        if (isSafeLiteral(rhs) || isSanitized(rhs, self.sanitizers) || isDirectSource(rhs)) return;
                         const rhsHasTaintedVar = containsTainted(rhs, taintedVars);
                         const rhsHasDirectSource = isDirectSource(rhs);
                         const rhsHasURLParam = isURLParamSource(rhs);
@@ -766,21 +792,21 @@ const Taint = {
                             // if (sourceFile.startsWith('inline')) sourceFile += " in " + meta.file
                             // let sinkFile = sinkInfo.file
                             // if (sinkFile.startsWith('inline')) sinkFile += " in " + meta.file
-
-                            issues.push({
-                                ruleId: self.id,
-                                description: self.description,
-                                severity: self.severity,
-                                type: 'AssignmentExpression',
-                                sourceName,
-                                sinkName,
-                                sourceFile: srcInfo.file,
-                                sourceFileFull: srcInfo.file.startsWith('inline') ? srcInfo.file +  " in " + meta.file : srcInfo.file,
-                                sourceLoc: srcInfo.loc,
-                                sinkFile: sinkInfo.file,
-                                sinkFileFull: sinkInfo.file.startsWith('inline') ? sinkInfo.file +  " in " + meta.file : sinkInfo.file,
-                                sinkLoc: sinkInfo.loc
-                            });
+                            if (issues.length < 200)
+                                issues.push({
+                                    ruleId: self.id,
+                                    description: self.description,
+                                    severity: self.severity,
+                                    type: 'AssignmentExpression',
+                                    sourceName,
+                                    sinkName,
+                                    sourceFile: srcInfo.file,
+                                    sourceFileFull: srcInfo.file.startsWith('inline') ? srcInfo.file + " in " + meta.file : srcInfo.file,
+                                    sourceLoc: srcInfo.loc,
+                                    sinkFile: sinkInfo.file,
+                                    sinkFileFull: sinkInfo.file.startsWith('inline') ? sinkInfo.file + " in " + meta.file : sinkInfo.file,
+                                    sinkLoc: sinkInfo.loc
+                                });
                         }
                     }
                 }
@@ -865,22 +891,22 @@ const Taint = {
                             // if (sourceFile.startsWith('inline')) sourceFile += " in " + meta.file
                             // let sinkFile = sinkInfo.file
                             // if (sinkFile.startsWith('inline')) sinkFile += " in " + meta.file
+                            if (issues.length < 200)
+                                issues.push({
+                                    ruleId: self.id,
+                                    description: self.description,
+                                    severity: self.severity,
+                                    type: 'CallExpression',
+                                    sourceName,
+                                    sinkName,
+                                    sourceFile: srcInfo.file,
+                                    sourceFileFull: srcInfo.file.startsWith('inline') ? srcInfo.file + " in " + meta.file : srcInfo.file,
+                                    sourceLoc: srcInfo.loc,
+                                    sinkFile: sinkInfo.file,
+                                    sinkFileFull: sinkInfo.file.startsWith('inline') ? sinkInfo.file + " in " + meta.file : sinkInfo.file,
+                                    sinkLoc: sinkInfo.loc
 
-                            issues.push({
-                                ruleId: self.id,
-                                description: self.description,
-                                severity: self.severity,
-                                type: 'CallExpression',
-                                sourceName,
-                                sinkName,
-                                sourceFile: srcInfo.file,
-                                sourceFileFull: srcInfo.file.startsWith('inline') ? srcInfo.file +  " in " + meta.file : srcInfo.file,
-                                sourceLoc: srcInfo.loc,
-                                sinkFile: sinkInfo.file,
-                                sinkFileFull: sinkInfo.file.startsWith('inline') ? sinkInfo.file +  " in " + meta.file : sinkInfo.file,
-                                sinkLoc: sinkInfo.loc
-
-                            });
+                                });
                         }
                     }
 
@@ -943,21 +969,21 @@ const Taint = {
                             // if (sourceFile.startsWith('inline')) sourceFile += " in " + meta.file
                             // let sinkFile = sinkLocObj.file
                             // if (sinkFile.startsWith('inline')) sinkFile += " in " + meta.file
-
-                            issues.push({
-                                ruleId: self.id,
-                                description: self.description,
-                                severity: self.severity,
-                                type: 'CallExpression',
-                                sourceName,
-                                sinkName,
-                                sourceFile: srcInfo.file,
-                                sourceFileFull: srcInfo.file.startsWith('inline') ? srcInfo.file +  " in " + meta.file : srcInfo.file,
-                                sourceLoc: srcInfo.loc,
-                                sinkFile: sinkLocObj.file,
-                                sinkFileFull: sinkLocObj.file.startsWith('inline') ? sinkLocObj.file +  " in " + meta.file : sinkLocObj.file,
-                                sinkLoc: sinkLocObj.loc
-                            });
+                            if (issues.length < 200)
+                                issues.push({
+                                    ruleId: self.id,
+                                    description: self.description,
+                                    severity: self.severity,
+                                    type: 'CallExpression',
+                                    sourceName,
+                                    sinkName,
+                                    sourceFile: srcInfo.file,
+                                    sourceFileFull: srcInfo.file.startsWith('inline') ? srcInfo.file + " in " + meta.file : srcInfo.file,
+                                    sourceLoc: srcInfo.loc,
+                                    sinkFile: sinkLocObj.file,
+                                    sinkFileFull: sinkLocObj.file.startsWith('inline') ? sinkLocObj.file + " in " + meta.file : sinkLocObj.file,
+                                    sinkLoc: sinkLocObj.loc
+                                });
                         }
                     }
                 },
@@ -1034,21 +1060,21 @@ const Taint = {
                             // if (sourceFile.startsWith('inline')) sourceFile += " in " + meta.file
                             // let sinkFile = sinkInfo.file
                             // if (sinkFile.startsWith('inline')) sinkFile += " in " + meta.file
-
-                            issues.push({
-                                ruleId: self.id,
-                                description: self.description,
-                                severity: self.severity,
-                                type: 'NewExpression',
-                                sourceName,
-                                sinkName,
-                                sourceFile: srcInfo.file,
-                                sourceFileFull: srcInfo.file.startsWith('inline') ? srcInfo.file +  " in " + meta.file : srcInfo.file,
-                                sourceLoc: srcInfo.loc,
-                                sinkFile: sinkInfo.file,
-                                sinkFileFull: sinkInfo.file.startsWith('inline') ? sinkInfo.file +  " in " + meta.file : sinkInfo.file,
-                                sinkLoc: sinkInfo.loc
-                            });
+                            if (issues.length < 200)
+                                issues.push({
+                                    ruleId: self.id,
+                                    description: self.description,
+                                    severity: self.severity,
+                                    type: 'NewExpression',
+                                    sourceName,
+                                    sinkName,
+                                    sourceFile: srcInfo.file,
+                                    sourceFileFull: srcInfo.file.startsWith('inline') ? srcInfo.file + " in " + meta.file : srcInfo.file,
+                                    sourceLoc: srcInfo.loc,
+                                    sinkFile: sinkInfo.file,
+                                    sinkFileFull: sinkInfo.file.startsWith('inline') ? sinkInfo.file + " in " + meta.file : sinkInfo.file,
+                                    sinkLoc: sinkInfo.loc
+                                });
                         }
                     }
                 }
