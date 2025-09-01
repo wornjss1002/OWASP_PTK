@@ -223,6 +223,7 @@ export class sastEngine {
             // Pass masterAST; the rule can read node.sourceFile if it wants.
             const findings = rule.check.call(rule, masterAST, { file: file }, ancestor) || [];
             rawFindings.push(...findings);
+            if (rawFindings.length > 300) break
         }
 
         // ----------------------------------------------------------
@@ -271,34 +272,68 @@ export class sastEngine {
     }
 
     getCodeSnippet(code, loc) {
-        if (!code || !loc || typeof loc.start.line !== 'number') return '';
-        const lines = code.split('\n');
-        const idx = loc.start.line - 1; // zero‐based
-        if (idx < 0 || idx >= lines.length) return '';
-        return lines[idx].trim();
+        if (!code || !loc || typeof loc.start.line !== "number") return "";
+
+        const lines = code.split("\n");
+        const idx = loc.start.line - 1;
+
+        if (idx < 0 || idx >= lines.length) return "";
+
+        const line = lines[idx];
+
+        const startCol = typeof loc.start.column === "number" ? loc.start.column : 0;
+        const endCol = typeof loc.end?.column === "number" ? loc.end.column : startCol + 50;
+
+        // Ensure the indices are within the line's length
+        const safeStart = Math.max(0, Math.min(startCol, line.length));
+        const safeEnd = Math.max(safeStart, Math.min(endCol, line.length));
+
+        return line.substring(safeStart, safeEnd).trim();
     }
 
     getCodeSnippetExt(code, location) {
-        let lines = code.split(/\r\n|\r|\n/)
-        let startLine = location.start.line
-        let endLine = location.end.line
-        let snippet = ''
-        if (lines.length > 3 && (startLine - 1) <= lines.length) {
-            snippet = "...\r\n"
-            snippet += (startLine - 2) >= 0 ? lines[startLine - 2] + "\r\n" : ''
-            snippet += (startLine - 1) >= 0 ? lines[startLine - 1] + "\r\n" : ''
-            snippet += startLine < lines.length ? lines[startLine] + "\r\n" : ''
-            if ((endLine - 2) <= lines.length && endLine > startLine) {
-                snippet += "...\r\n"
-                snippet += lines[endLine - 2] + "\r\n"
-                snippet += "...\r\n"
+        if (!code || !location || !location.start || !location.end) return "";
+
+        const lines = code.split(/\r\n|\r|\n/);
+        const startLine = location.start.line;
+        const endLine = location.end.line;
+
+        // Safety check
+        if (startLine < 1 || endLine < 1 || startLine > lines.length || endLine > lines.length) {
+            return "";
+        }
+
+        let snippet = "";
+
+        if (startLine === endLine) {
+            // Single-line snippet with column precision
+            const line = lines[startLine - 1];
+            const startCol = typeof location.start.column === "number" ? location.start.column : 0;
+            const endCol = typeof location.end.column === "number" ? location.end.column : startCol + 50;
+
+            const safeStart = Math.max(0, Math.min(startCol, line.length));
+            const safeEnd = Math.max(safeStart, Math.min(endCol, line.length));
+
+            snippet = line.substring(safeStart, safeEnd).trim();
+        } else if (lines.length > 3) {
+            // Multi-line snippet with context
+            snippet += "...\r\n";
+            if (startLine - 2 >= 0) snippet += lines[startLine - 2] + "\r\n";
+            if (startLine - 1 >= 0) snippet += lines[startLine - 1] + "\r\n";
+            if (startLine < lines.length) snippet += lines[startLine] + "\r\n";
+
+            if (endLine - 2 < lines.length && endLine > startLine) {
+                snippet += "...\r\n";
+                snippet += lines[endLine - 2] + "\r\n";
+                snippet += "...\r\n";
             } else {
-                snippet += "...\r\n"
+                snippet += "...\r\n";
             }
         } else {
-            snippet = code
+            snippet = code;
         }
-        return snippet
+
+        return snippet.trim();
     }
 
 }
