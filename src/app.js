@@ -34,6 +34,7 @@ export class ptk_app {
 
             if (result.pentestkit8_settings) {
                 this.settings.mergeSettings(result.pentestkit8_settings)
+                if (this.updated) this.settings.release_note.show = true
             } else {
                 this.settings.resetSettings()
             }
@@ -91,6 +92,15 @@ export class ptk_app {
                     this.settings.updateSettings("history", { route: message.route, hash: message.hash })
                 }
 
+                if (message.type == "release_note") {
+                    sendResponse({ show: this.settings.release_note.show })
+                    return true
+                }
+                if (message.type == "release_note_read") {
+                    this.settings.updateSettings("release_note", {show:false})
+                    return true
+                }
+
                 if (message.type == "ping") {
                     return "pong"
                 }
@@ -101,9 +111,12 @@ export class ptk_app {
 
 
 
-browser.runtime.onInstalled.addListener(async () => {
-
+browser.runtime.onInstalled.addListener(async (details) => {
+    if (details.reason == 'update') {
+        worker.ptk_app.updated = true
+    }
 })
+
 
 
 

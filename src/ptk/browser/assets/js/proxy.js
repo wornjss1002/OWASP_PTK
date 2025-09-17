@@ -20,9 +20,7 @@ jQuery(function () {
 
     $(document).on("click", ".request_details", function () {
         let table = $(this).closest('table').DataTable(),
-            tr = $(this).closest('tr'),
-            row = table.row(tr),
-            values = table.row($(this).parents('tr')).data()
+            values = table.row($(this).closest('tr')).data()
         controller.getRequest(values[3], values[2], values[1]).then(function (response) {
             window.location.href = "rbuilder.html?requestDetails=" + btoa(encodeURIComponent(JSON.stringify(response)))
         })

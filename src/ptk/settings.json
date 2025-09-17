@@ -79,5 +79,8 @@
     "history": {
         "route": "index",
         "hash": ""
+    },
+    "release_note":{
+        "show": true
     }
 }

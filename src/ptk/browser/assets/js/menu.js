@@ -197,7 +197,24 @@ jQuery(function () {
             src="assets/images/paypal.png" title="Donation" style="width: 140px;"></a>
         </div-->
 
+
         `
+    )
+
+    $("body").prepend(
+        `
+        <div class="ui success message" id="ptk_release_note" style="display:none;position: absolute;bottom: 0;right: 0;z-index: 2;margin:0; width:500px">
+            <i class="close icon ptk_release_note"></i>
+            <div class="header">
+                Release notes - #${version}
+            </div>
+            <ul class="list">
+                <li>Attacks on each parameter separately - The DAST engine will enumerate individual input parameters from a captured request and run attack payloads targeted at each parameter one-at-a-time.</li>
+                <li>Attacks on JSON - The engine understands application/json payloads and will mutate JSON bodies rather than treating them as opaque strings. Attacks operate at JSON key/value positions, array elements, and nested paths.</li>
+            </ul>
+        </div>
+        `
+
     )
 
 
@@ -292,5 +309,24 @@ jQuery(function () {
         .dropdown({
             allowAdditions: true
         })
+
+    setTimeout(function () {
+        browser.runtime.sendMessage({
+            channel: "ptk_popup2background_app",
+            type: "release_note"
+        }).then(response => {
+            if (response.show) {
+                $('#ptk_release_note').show()
+            }
+        })
+    }, 300)
+
+    $('.close.icon.ptk_release_note').on('click', function () {
+        $('#ptk_release_note').hide()
+        browser.runtime.sendMessage({
+            channel: "ptk_popup2background_app",
+            type: "release_note_read"
+        })
+    })
 
 })

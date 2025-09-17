@@ -32,6 +32,7 @@ setInterval(function () {
 
 })();
 
+
 browser.runtime.onMessage.addListener(function (message, sender, sendResponse) {
     if (message.channel == "ptk_background2content" && message.type == "init") {
         const contentData = message
@@ -110,6 +111,14 @@ window.addEventListener("message", (event) => {
             channel: "ptk_content_iast2background_iast",
             type: "finding_report",
             finding: event.data.finding
+        }).catch(e => e)
+    }
+
+    if (event.data?.ptk_ws) {
+        browser.runtime.sendMessage({
+            channel: "ptk_contentws2rattacker",
+            type: event.data.kind,
+            payload: event.data.payload
         }).catch(e => e)
     }
 
