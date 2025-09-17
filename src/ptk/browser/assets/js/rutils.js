@@ -146,13 +146,16 @@ function getIconBySeverity(severity) {
 
 export function bindAttack(info, original, index, requestId = -1) {
     let proof = ''
+    let param = ''
 
     let misc = getMisc(info)
     let icon = misc.icon, order = misc.order, attackClass = misc.attackClass
 
     if (info.proof)
         proof = `<div class="description"><p>Proof: <b><i name="proof">${ptk_utils.escapeHtml((info.proof))}</i></b></p></div>`
-
+    if(info.metadata.attacked){
+        param = `<div class="description"><p>Param: <b><i name="param">${ptk_utils.escapeHtml((info.metadata.attacked.name))}</i></b></p></div>`
+    }
     let target = original?.request?.url ? original.request.url : ""
     let item = `
                 <div class="ui message attack_info ${attackClass} ${requestId}" style="position:relative;margin-top: 0;" data-order="${order}">
@@ -164,6 +167,7 @@ export function bindAttack(info, original, index, requestId = -1) {
                     <p>URL: <a href="${target}" target="_blank">${target}</a></p>
                 </div>
                 ${proof}
+                ${param}
                 <div class="ui left floated">
                     <a href="#" class="attack_details" data-requestId="${requestId}" data-index="${index}">Details</a>
                 </div>

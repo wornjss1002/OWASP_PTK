@@ -102,7 +102,43 @@ export class ptk_rattacker {
         // }
     }
 
+    registerScript() {
+        let file = !worker.isFirefox ? 'ptk/content/ws.js' : 'content/ws.js'
+        try {
+            browser.scripting.registerContentScripts([{
+                id: 'websocket-agent',
+                js: [file],
+                matches: ['<all_urls>'],
+                runAt: 'document_start',
+                world: 'MAIN'
+            }]).then(s => {
+                console.log(s)
+            });
+        } catch (e) {
+            console.log('Failed to register WebSocket script:', e);
+        }
+    }
+
+
+    async unregisterScript() {
+        try {
+            await browser.scripting.unregisterContentScripts({
+                ids: ["websocket-agent"],
+            });
+        } catch (err) {
+            //console.log(`failed to unregister content scripts: ${err}`);
+        }
+
+    }
+
     onMessage(message, sender, sendResponse) {
+        if (message.channel == "ptk_contentws2rattacker") {
+
+            if (this["msg_" + message.type]) {
+                return this["msg_" + message.type](message)
+            }
+            return Promise.resolve({ result: false })
+        }
 
         if (message.channel == "ptk_popup2background_rattacker") {
             if (this["msg_" + message.type]) {
@@ -301,6 +337,8 @@ export class ptk_rattacker {
     runBackroungScan(tabId, host, domains, settings) {
         this.reset()
         this.addListeners()
+        if(settings.ws)
+            this.registerScript()
         this.engine.start(tabId, host, this.parseDomains(domains), settings)
     }
 
@@ -308,6 +346,7 @@ export class ptk_rattacker {
         this.engine.stop()
         this.scanResult = this.engine.scanResult
         ptk_storage.setItem(this.storageKey, this.scanResult)
+        this.unregisterScript()
         this.removeListeners()
     }
 

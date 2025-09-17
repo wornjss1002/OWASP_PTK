@@ -246,6 +246,8 @@ export class dastEngine {
         return Object.assign({}, result, { stats: stats })
     }
 
+
+
     async scanRequest(raw, ontime = false) {
         const schema = ptk_request.parseRawRequest(raw)
         const original = await this.executeOriginal(schema)
@@ -272,7 +274,7 @@ export class dastEngine {
                     const attackRequests = module.buildAttacks(_schema, attack)
                     for (const req of attackRequests) {
                         const _s = ptk_request.updateRawRequest(req, null, attack.action.options)
-                        _s.metadata = Object.assign({}, module.metadata, attack)
+                        _s.metadata = Object.assign({}, _s.metadata, module.metadata, attack)
                         const executed = await this.activeAttack(_s)
                         if (executed && attack.validation) {
                             const res = module.validateAttack(executed, original)
@@ -296,6 +298,7 @@ export class dastEngine {
         return { original, attacks }
     }
 
+
     async activeAttack(schema) {
         try {
             let request = new ptk_request()
@@ -308,7 +311,7 @@ export class dastEngine {
     async executeOriginal(schema) {
         let _schema = JSON.parse(JSON.stringify(schema))
         let request = new ptk_request()
-        _schema.opts.override_headers = false
+        _schema.opts.override_headers = true
         _schema.opts.follow_redirect = true
         return Promise.resolve(request.sendRequest(_schema))
     }
