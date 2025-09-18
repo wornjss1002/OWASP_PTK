@@ -2,7 +2,7 @@
 
 const isFirefox = typeof InstallTrigger !== 'undefined';
 const isChrome = !!window.chrome && !!window.chrome.runtime;
-console.log({ isChrome, isFirefox });
+//console.log({ isChrome, isFirefox });
 
 // keep service worker alive
 setInterval(function () {

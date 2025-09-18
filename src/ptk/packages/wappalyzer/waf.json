@@ -171,6 +171,14 @@
                 "x-azion-request-id": ".+?"
             }
         },
+        "Baffin Bay (Mastercard)": {
+            "cats": [
+                100
+            ],
+            "headers": {
+                "server": " baffin-bay-inlet'"
+            }
+        },
         "Yunjiasu (Baidu Cloud Computing)": {
             "cats": [
                 100
@@ -545,7 +553,8 @@
                 "please consult with your administrator"
             ],
             "cookies": {
-                "^TS.+?": ""
+                "TS[a-fA-F0-9]{8}=.+": "",
+                "TS[a-fA-F0-9]{6}=.+": ""
             }
         },
         "BIG-IP Local Traffic Manager (F5 Networks)": {
@@ -824,6 +833,14 @@
                 "^l[mg]_sessid=": ""
             }
         },
+        "Link11 WAAP (Link11)": {
+            "cats": [
+                100
+            ],
+            "headers": {
+                "server": " rhino-core-shield'"
+            }
+        },
         "LiteSpeed (LiteSpeed Technologies)": {
             "cats": [
                 100
@@ -1022,6 +1039,14 @@
                 "Download of virus.spyware blocked",
                 "Palo Alto Next Generation Security Platform"
             ]
+        },
+        "360PanYun (360 Technologies)": {
+            "cats": [
+                100
+            ],
+            "headers": {
+                "Server": "panyun"
+            }
         },
         "PentaWAF (Global Network Services)": {
             "cats": [
@@ -1310,7 +1335,7 @@
                 "access is restricted due to a security rule"
             ]
         },
-        "SiteGuard (Sakura Inc.)": {
+        "SiteGuard (EG Secure Solutions Inc.)": {
             "cats": [
                 100
             ],
@@ -1417,6 +1442,14 @@
             ],
             "cookies": {
                 "^st8id=": ""
+            }
+        },
+        "ThreatX (A10 Networks)": {
+            "cats": [
+                100
+            ],
+            "headers": {
+                "X-Request-Id": ".*"
             }
         },
         "TransIP Web Firewall (TransIP)": {
