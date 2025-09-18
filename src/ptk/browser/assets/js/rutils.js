@@ -3,6 +3,9 @@ import { ptk_decoder } from "../../../background/decoder.js"
 const decoder = new ptk_decoder()
 
 
+let mf = browser.runtime.getManifest().manifest_version
+const isFirefox = mf == 2
+
 $('#attack_details_dialog_wrapper').prepend(
 
     `
@@ -83,11 +86,15 @@ $('#attack_details_dialog_wrapper').prepend(
         <div class="header">HTML response</div>
         
         <div class="content" id="dialogResponseHtmlContent" style="min-height: 400px;height: 90%;padding:0px">
-            <object id="dialogResponseHtmlContentObj" data="" style="overflow:hidden;height:100%;width:100%; min-height: 400px;" height="100%"></object>
+            <object id="dialogResponseHtmlContentObj" type="text/html" data="" style="overflow:hidden;height:100%;width:100%; min-height: 400px;" height="100%">
+            </object>
+            <iframe id="dialogResponseHtmlContentFrame" src="" style="overflow:hidden;height:100%;width:100%; min-height: 400px;" height="100%"></iframe>
         </div>
     </div>
     `
 )
+
+
 
 
 export function sortAttacks() {
@@ -153,7 +160,7 @@ export function bindAttack(info, original, index, requestId = -1) {
 
     if (info.proof)
         proof = `<div class="description"><p>Proof: <b><i name="proof">${ptk_utils.escapeHtml((info.proof))}</i></b></p></div>`
-    if(info.metadata.attacked){
+    if (info.metadata.attacked) {
         param = `<div class="description"><p>Param: <b><i name="param">${ptk_utils.escapeHtml((info.metadata.attacked.name))}</i></b></p></div>`
     }
     let target = original?.request?.url ? original.request.url : ""
@@ -486,7 +493,17 @@ export function showHtml(obj, newWin = false) {
         })
     } else {
         $('#dialogResponseHtml').modal('show')
-        $('#dialogResponseHtmlContentObj').prop('data', url)
+        if(isFirefox){
+            $('#dialogResponseHtmlContentFrame').prop('src', url)
+            $('#dialogResponseHtmlContentObj').hide()
+            $('#dialogResponseHtmlContentFrame').show()
+        }
+        else{
+            $('#dialogResponseHtmlContentObj').prop('data', url)
+            $('#dialogResponseHtmlContentFrame').hide()
+            $('#dialogResponseHtmlContentObj').show()
+        }
+        
     }
     return false
 }
