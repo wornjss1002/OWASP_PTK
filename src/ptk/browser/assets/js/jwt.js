@@ -126,6 +126,13 @@ jQuery(function () {
         })
     })
 
+    //Algorithm none
+    $("#algorithm_none_menu_btn").on('click', function (e) {
+        updAlg('none'); 
+        showSignature('none');
+        $('#algorithm-select').dropdown('set selected', 'none');
+    });
+
     //Secret bruteforce
     function clearSecret() {
         $('#bruteforce_secret_dlg_secret_msg').hide()
